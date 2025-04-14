@@ -28,8 +28,8 @@ int main(){
             break;
         }try {
             std::cout << PRINT(EVAL(READ(input))) << std::endl;
-        }catch(const syntaxError&) {
-            std::cout << std::endl;
+        }catch(const syntaxError& e) {
+            std::cout << e.what() << std::endl;
         }
     }
 
