@@ -109,8 +109,12 @@ auto Reader::read_atom(const Reader &reader) -> MalAtom* {
     if (MalType::isBool(token)) {
         return new MalBool(token == "true");
     }
-    if (MalType::isString(token))
+    if (!token.empty() && token[0] == '"') {
+        if (!MalType::isString(token)) {
+            throw syntaxError("unbalanced");
+        }
         return new MalString(token);
+    }
     if (MalType::isKeyword(token))
         return new MalKeyword(token.substr(1));
 
