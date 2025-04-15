@@ -35,6 +35,9 @@ auto Reader::read_form(Reader &reader) -> MalType* {
         if (token == "{") {
             return read_struct(reader, "}");
         }
+        if (token == "'" || token == "`" || token == "~" || token == "~@"){
+            return read_syntax_quote(reader, token);
+        }
     }else {
         return new MalNil();
     }
@@ -98,6 +101,25 @@ auto Reader::read_struct(Reader &reader, const std::string& type) -> MalStruct* 
     throw syntaxError("unbalanced");
 }
 
+MalSyntaxQuote *Reader::read_syntax_quote(Reader &reader, const std::string &type) {
+    if (!reader.hasNext()) {
+        throw syntaxError("unbalanced");
+    }
+    const auto token = reader.peek();
+    reader.next();
+    MalSyntaxQuote* quote = nullptr;
+    if (type == "'"){
+        quote = new MalQuote(Reader::read_form(reader));
+    } else if (type == "`"){
+        quote = new MalQuasiQuote(Reader::read_form(reader));
+    } else if (type == "~"){
+        quote = new MalUnQuote(Reader::read_form(reader));
+    } else if (type == "~@"){
+        quote = new MalUnQuoteSplicing(Reader::read_form(reader));
+    }
+    return quote;
+}
+
 auto Reader::read_atom(const Reader &reader) -> MalAtom* {
     const auto token = reader.peek();
     if (MalType::isInt(token)) {
@@ -140,3 +162,4 @@ auto Reader::next() -> std::string {
 auto Reader::hasNext() const -> bool {
     return pos_ < tokens_.size();
 }
+

@@ -14,6 +14,7 @@ public:
     static MalType* read_str(std::string input);
     static MalType* read_form(Reader& reader);
     static MalStruct *read_struct(Reader &reader, const std::string &type);
+    static MalSyntaxQuote* read_syntax_quote(Reader &reader, const std::string &type);
     static MalAtom* read_atom(const Reader &reader);
     Reader(std::vector<std::string> tokens, size_t pos);
     [[nodiscard]] std::string peek() const;
