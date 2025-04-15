@@ -37,7 +37,7 @@ auto MalType::isString(const std::string &token) -> bool {
                 (content[i + 1] != 'n' && content[i + 1] != 't' && content[i + 1] != '\\' &&
                  content[i + 1] != '\"' && content[i + 1] != 'r')) {
                 return false;
-                 }
+            }
             ++i;
         }
     }
@@ -45,6 +45,9 @@ auto MalType::isString(const std::string &token) -> bool {
     return true;
 }
 
+MalType::~MalType() {
+    delete this->meta_;
+}
 
 auto MalNil::to_string() -> std::string {
     return "nil";
@@ -62,29 +65,6 @@ auto MalInt::to_string() -> std::string {
     return std::to_string(this->val_);
 }
 
-MalChar::MalChar(const std::string& val) {
-    const std::string charStr = val.substr(1, val.length() - 2);
-
-    if (charStr == "\\n") {
-        this->val_ = '\n';
-    } else if (charStr == "\\t") {
-        this->val_ = '\t';
-    } else if (charStr == "\\r") {
-        this->val_ = '\r';
-    } else if (charStr == "\\\'") {
-        this->val_ = '\'';
-    } else if (charStr == "\\\"") {
-        this->val_ = '\"';
-    } else if (charStr == "\\\\") {
-        this->val_ = '\\';
-    }
-    this->val_ = charStr[0];
-}
-
-auto MalChar::to_string() -> std::string {
-    return std::to_string(this->val_);
-}
-
 MalString::MalString(const std::string& val) : val_(std::move(val.substr(1, val.length() - 2))) {}
 
 auto MalString::to_string() -> std::string {
@@ -98,13 +78,13 @@ auto MalSymbol::to_string() -> std::string {
 }
 
 MalList::MalList(std::vector<MalType*> elements)
-    : elements_(std::move(elements)) {}
+        : elements_(std::move(elements)) {}
 
 auto MalList::to_string() -> std::string {
     std::stringstream ss;
     ss << "(";
     bool first = true;
-    for (const auto element : elements_) {
+    for (const auto& element : elements_) {
         if (!first) {
             ss << " ";
         }
@@ -116,19 +96,19 @@ auto MalList::to_string() -> std::string {
 }
 
 MalList::~MalList() {
-    for (const auto e: this->elements_) {
+    for (const auto& e: this->elements_) {
         delete e;
     }
 }
 
 MalVector::MalVector(std::vector<MalType *> elements)
-    : elements_(std::move(elements)) {}
+        : elements_(std::move(elements)) {}
 
 auto MalVector::to_string() -> std::string {
     std::stringstream ss;
     ss << "[";
     bool first = true;
-    for (const auto element : elements_) {
+    for (const auto& element : elements_) {
         if (!first) {
             ss << " ";
         }
@@ -140,13 +120,13 @@ auto MalVector::to_string() -> std::string {
 }
 
 MalVector::~MalVector() {
-    for (const auto e: this->elements_) {
+    for (const auto& e: this->elements_) {
         delete e;
     }
 }
 
 MalKeyword::MalKeyword(std::string name)
-    : name_(std::move(name)) {}
+        : name_(std::move(name)) {}
 
 auto MalKeyword::to_string() -> std::string {
     return ":" + this->name_;
@@ -154,13 +134,13 @@ auto MalKeyword::to_string() -> std::string {
 
 
 MalMap::MalMap(const std::map<MalType*, MalType*>& elements)
-    : elements_(elements) {}
+        : elements_(elements) {}
 
 auto MalMap::to_string() -> std::string {
     std::stringstream ss;
     ss << "{";
     bool first = true;
-    for (const auto [key, val] : elements_) {
+    for (const auto& [key, val] : elements_) {
         if (!first) {
             ss << " ";
         }
@@ -172,8 +152,69 @@ auto MalMap::to_string() -> std::string {
 }
 
 MalMap::~MalMap() {
-    for (const auto e: this->elements_) {
+    for (const auto& e: this->elements_) {
         delete e.first;
         delete e.second;
     }
+}
+
+MalMetaData::MalMetaData(MalMap *map) : data_(map) {}
+
+MalMetaData::~MalMetaData() {
+    delete this->data_;
+}
+
+std::string MalMetaData::to_string() {
+    return std::string();
+}
+
+MalMap *MalMetaData::get_map() {
+    return nullptr;
+}
+
+MalType *MalMetaData::get(MalType *key) {
+    return key; // todo
+}
+
+void MalMetaData::put(MalType *key, MalType *val) {
+    if (key && val) { // todo
+    }
+}
+
+MalSyntaxQuote::MalSyntaxQuote(MalType *expr) : expr_(expr) {}
+
+MalSyntaxQuote::~MalSyntaxQuote() {
+    delete this->expr_;
+}
+
+MalQuote::MalQuote(MalType *expr) : MalSyntaxQuote(expr) {}
+
+std::string MalQuote::to_string() {
+    std::stringstream ss;
+    ss << "(quote " << this->expr_->to_string() << ")";
+    return ss.str();
+}
+
+MalQuasiQuote::MalQuasiQuote(MalType *expr) : MalSyntaxQuote(expr) {}
+
+std::string MalQuasiQuote::to_string() {
+    std::stringstream ss;
+    ss << "(quasiquote " << this->expr_->to_string() << ")";
+    return ss.str();
+}
+
+MalUnQuote::MalUnQuote(MalType *expr) : MalSyntaxQuote(expr) {}
+
+std::string MalUnQuote::to_string() {
+    std::stringstream ss;
+    ss << "(unquote " << this->expr_->to_string() << ")";
+    return ss.str();
+}
+
+MalUnQuoteSplicing::MalUnQuoteSplicing(MalType *expr) : MalSyntaxQuote(expr) {}
+
+std::string MalUnQuoteSplicing::to_string() {
+    std::stringstream ss;
+    ss << "(unquote-splicing " << this->expr_->to_string() << ")";
+    return ss.str();
 }
