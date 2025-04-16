@@ -69,7 +69,7 @@ class MalList final : public MalStruct {
 
     public:
         explicit MalList(std::vector<MalType*> elements);
-
+        MalList(std::initializer_list<MalType*> elements);
         std::string to_string() override;
         ~MalList() override;
 };
@@ -149,5 +149,22 @@ public:
     std::string to_string() override;
 };
 
+class MalDeref : public MalSyntaxQuote {
+public:
+    explicit MalDeref(MalType* expr);
+
+    std::string to_string() override;
+};
+
+class MalMetaSymbol : public MalSyntaxQuote {
+    MalType* meta_;
+    MalType* value_;
+public:
+    explicit MalMetaSymbol(MalType* meta, MalType* value);
+    [[nodiscard]] MalType* get_meta() const;
+    [[nodiscard]] MalType* get_value() const;
+    std::string to_string() override;
+    ~MalMetaSymbol() override;
+};
 
 #endif //TYPES_H

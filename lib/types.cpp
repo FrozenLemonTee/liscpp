@@ -101,8 +101,11 @@ MalList::~MalList() {
     }
 }
 
+MalList::MalList(std::initializer_list<MalType *> elements)
+    : elements_(elements) {}
+
 MalVector::MalVector(std::vector<MalType *> elements)
-        : elements_(std::move(elements)) {}
+    : elements_(std::move(elements)) {}
 
 auto MalVector::to_string() -> std::string {
     std::stringstream ss;
@@ -215,6 +218,39 @@ MalUnQuoteSplicing::MalUnQuoteSplicing(MalType *expr) : MalSyntaxQuote(expr) {}
 
 std::string MalUnQuoteSplicing::to_string() {
     std::stringstream ss;
-    ss << "(unquote-splicing " << this->expr_->to_string() << ")";
+    ss << "(splice-unquote " << this->expr_->to_string() << ")";
     return ss.str();
 }
+
+MalDeref::MalDeref(MalType *expr) : MalSyntaxQuote(expr) {}
+
+std::string MalDeref::to_string() {
+    std::stringstream ss;
+    ss << "(deref " << this->expr_->to_string() << ")";
+    return ss.str();
+}
+
+MalMetaSymbol::MalMetaSymbol(MalType *meta, MalType *value)
+    : MalSyntaxQuote(nullptr), meta_(meta), value_(value) {}
+
+MalType *MalMetaSymbol::get_meta() const {
+    return this->meta_;
+}
+
+MalType *MalMetaSymbol::get_value() const {
+    return this->value_;
+}
+
+std::string MalMetaSymbol::to_string() {
+    std::stringstream ss;
+    ss << "(with-meta " << this->value_->to_string();
+    ss << " " << this->meta_->to_string() << ")";
+    return ss.str();
+}
+
+MalMetaSymbol::~MalMetaSymbol() {
+    delete this->meta_;
+    delete this->value_;
+}
+
+
