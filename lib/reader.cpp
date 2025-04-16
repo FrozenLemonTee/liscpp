@@ -35,7 +35,9 @@ auto Reader::read_form(Reader &reader) -> MalType* {
         if (token == "{") {
             return read_struct(reader, "}");
         }
-        if (token == "'" || token == "`" || token == "~" || token == "~@"){
+        if (token == "'" || token == "`" ||
+            token == "~" || token == "~@" ||
+            token == "@" || token == "^"){
             return read_syntax_quote(reader, token);
         }
     }else {
@@ -71,34 +73,39 @@ auto Reader::read_struct(Reader &reader, const std::string& type) -> MalStruct* 
         }
 
     } else if (reader.peek() == "{") {
-        std::map<MalType*, MalType*> map;
-        MalType* key = nullptr;
-        MalType* value = nullptr;
-
-        while (reader.hasNext()) {
-            reader.next();
-            token = reader.peek();
-
-            if (token == "}") {
-                break;
-            }
-
-            if (key == nullptr) {
-                key = read_form(reader);
-            } else {
-                value = read_form(reader);
-                map.insert({key, value});
-                key = nullptr;
-            }
-        }
-
-        if (key != nullptr)
-            throw syntaxError("unbalanced");
-
-        return new MalMap(map);
+        return read_map(reader);
     }
 
     throw syntaxError("unbalanced");
+}
+
+MalMap *Reader::read_map(Reader &reader) {
+    std::map<MalType*, MalType*> map;
+    MalType* key = nullptr;
+    MalType* value = nullptr;
+    std::string token;
+
+    while (reader.hasNext()) {
+        reader.next();
+        token = reader.peek();
+
+        if (token == "}") {
+            break;
+        }
+
+        if (key == nullptr) {
+            key = read_form(reader);
+        } else {
+            value = read_form(reader);
+            map.insert({key, value});
+            key = nullptr;
+        }
+    }
+
+    if (key != nullptr)
+        throw syntaxError("unbalanced");
+
+    return new MalMap(map);
 }
 
 MalSyntaxQuote *Reader::read_syntax_quote(Reader &reader, const std::string &type) {
@@ -116,6 +123,13 @@ MalSyntaxQuote *Reader::read_syntax_quote(Reader &reader, const std::string &typ
         quote = new MalUnQuote(Reader::read_form(reader));
     } else if (type == "~@"){
         quote = new MalUnQuoteSplicing(Reader::read_form(reader));
+    } else if (type == "@"){
+        quote = new MalDeref(Reader::read_form(reader));
+    } else if (type == "^"){
+        MalType* meta = Reader::read_form(reader);
+        reader.next();
+        MalType* value = Reader::read_form(reader);
+        quote = new MalMetaSymbol(meta, value);
     }
     return quote;
 }
