@@ -30,7 +30,7 @@ MalType* EVAL(MalType* input, Env& env) {
 
         auto fn = dynamic_cast<MalFunction*>(eval_args[0]);
         if (!fn){
-            throw typeError(eval_args[0]->to_string() + "is not a function");
+            throw typeError(eval_args[0]->to_string() + " is not a function");
         }
         return fn->apply({eval_args.begin() + 1, eval_args.end()});
     }
