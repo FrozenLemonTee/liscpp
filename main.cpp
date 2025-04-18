@@ -23,6 +23,10 @@ MalType* EVAL(MalType* input, Env& env) {
     }
 
     if (auto lst = dynamic_cast<MalList*>(input); lst){
+        if (lst->get_elem().empty()){
+            return lst;
+        }
+
         std::vector<MalType*> eval_args;
         for (auto& arg: lst->get_elem()){
             eval_args.emplace_back(EVAL(arg, env));
@@ -33,6 +37,22 @@ MalType* EVAL(MalType* input, Env& env) {
             throw typeError(eval_args[0]->to_string() + " is not a function");
         }
         return fn->apply({eval_args.begin() + 1, eval_args.end()});
+    }
+
+    if (auto vec = dynamic_cast<MalVector*>(input); vec){
+        std::vector<MalType*> eval_args;
+        for (auto& arg: vec->get_elem()){
+            eval_args.emplace_back(EVAL(arg, env));
+        }
+        return new MalVector(eval_args);
+    }
+
+    if (auto map = dynamic_cast<MalMap*>(input); map){
+        std::map<MalType*, MalType*> eval_args;
+        for (auto& [key, value]: map->get_elem()){
+            eval_args.insert({key, EVAL(value, env)});
+        }
+        return new MalMap(eval_args);
     }
 
     return input;
@@ -54,6 +74,8 @@ int main(){
         }try {
             std::cout << PRINT(EVAL(READ(input), env)) << std::endl;
         }catch(const syntaxError& e) {
+            std::cout << e.what() << std::endl;
+        }catch(const typeError& e){
             std::cout << e.what() << std::endl;
         }
     }
