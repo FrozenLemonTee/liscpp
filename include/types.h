@@ -117,6 +117,7 @@ class MalMap final : public MalStruct {
     std::map<MalType*, MalType*> elements_;
     public:
     explicit MalMap(const std::map<MalType*, MalType*>& elements);
+    std::map<MalType*, MalType*>& get_elem();
     [[nodiscard]] std::string to_string() const override;
     [[nodiscard]] MalMap* clone() const override;
     ~MalMap() override;

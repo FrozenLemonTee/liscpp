@@ -231,6 +231,10 @@ MalMap *MalMap::clone() const {
     return new MalMap(*this);
 }
 
+std::map<MalType *, MalType *> &MalMap::get_elem() {
+    return this->elements_;
+}
+
 MalMetaData::MalMetaData(MalMap *map) : data_(map) {}
 
 MalMetaData::~MalMetaData() {
