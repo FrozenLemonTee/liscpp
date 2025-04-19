@@ -27,6 +27,46 @@ MalType* EVAL(MalType* input, Env& env) {
             return lst;
         }
 
+        auto first = lst->get_elem()[0];
+        if (first && dynamic_cast<MalSymbol*>(first)->name() == "def!"){
+            if (lst->get_elem().size() != 3){
+                throw syntaxError("expected 2 args, but given " + std::to_string(lst->get_elem().size() - 1) + "arg(s)");
+            }
+            if (!dynamic_cast<MalSymbol*>(lst->get_elem()[1])){
+                throw syntaxError("expected a symbol");
+            }
+
+            auto symbol = dynamic_cast<MalSymbol*>(lst->get_elem()[1]);
+            auto name = symbol->name();
+            MalType* value = EVAL(lst->get_elem()[2], env);
+            env.set(name, value);
+
+            return value;
+        }
+        if (first && dynamic_cast<MalSymbol*>(first)->name() == "let*"){
+            if (lst->get_elem().size() != 3){
+                throw syntaxError("expected 2 args, but given " + std::to_string(lst->get_elem().size() - 1) + "arg(s)");
+            }
+            if (!dynamic_cast<MalList*>(lst->get_elem()[1])){
+                throw syntaxError("expected a list for binding-list of let*");
+            }
+            auto binding_list = dynamic_cast<MalList*>(lst->get_elem()[1]);
+            if (binding_list->get_elem().size() % 2 != 0){
+                throw syntaxError("expected a value for a symbol to bind");
+            }
+
+            Env let_env(&env);
+
+            for (std::size_t i = 0; i < binding_list->get_elem().size(); i += 2){
+                auto symbol = dynamic_cast<MalSymbol*>(binding_list->get_elem()[i]);
+                if (!symbol) throw syntaxError("let* binding name must be symbol");
+                auto value = EVAL(binding_list->get_elem()[i + 1], let_env);
+                let_env.set(symbol->name(), value);
+            }
+
+            return EVAL(lst->get_elem()[2], let_env)->clone();
+        }
+
         std::vector<MalType*> eval_args;
         for (auto& arg: lst->get_elem()){
             eval_args.emplace_back(EVAL(arg, env));
@@ -63,7 +103,7 @@ std::string PRINT(MalType* input) {
 }
 
 int main(){
-    Env env;
+    Env global_env;
 
     while(true){
         std::cout << "user> ";
@@ -72,7 +112,7 @@ int main(){
             std::cout << std::endl;
             break;
         }try {
-            std::cout << PRINT(EVAL(READ(input), env)) << std::endl;
+            std::cout << PRINT(EVAL(READ(input), global_env)) << std::endl;
         }catch(const syntaxError& e) {
             std::cout << e.what() << std::endl;
         }catch(const typeError& e){
