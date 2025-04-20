@@ -14,10 +14,18 @@ MalType* READ(std::string input){
 }
 
 MalType* EVAL(MalType* input, Env& env) {
+    if (MalType* dbg = env.get("DEBUG-EVAL")) {
+        auto* b = dynamic_cast<MalBool*>(dbg);
+        auto* n = dynamic_cast<MalNil*>(dbg);
+        if (!(b && !b->get_elem()) && !n) {
+            std::cout << "EVAL: " << Printer::pr_str(input) << std::endl;
+        }
+    }
+
     if (auto sym = dynamic_cast<MalSymbol*>(input); sym){
         MalType* opt = env.get(sym->name());
         if (!opt){
-            throw typeError("Unknown symbol " + std::string("\"") +  sym->name() + std::string("\""));
+            throw typeError("'" + sym->name() + "'" + " not found.");
         }
         return opt;
     }
@@ -47,20 +55,25 @@ MalType* EVAL(MalType* input, Env& env) {
             if (lst->get_elem().size() != 3){
                 throw syntaxError("expected 2 args, but given " + std::to_string(lst->get_elem().size() - 1) + "arg(s)");
             }
-            if (!dynamic_cast<MalList*>(lst->get_elem()[1])){
-                throw syntaxError("expected a list for binding-list of let*");
-            }
             auto binding_list = dynamic_cast<MalList*>(lst->get_elem()[1]);
-            if (binding_list->get_elem().size() % 2 != 0){
+            auto binding_vector = dynamic_cast<MalVector*>(lst->get_elem()[1]);
+            if (!binding_list && !binding_vector){
+                throw syntaxError("expected a list or a vector for binding-list of let*");
+            }
+
+            if (binding_list && binding_list->get_elem().size() % 2 != 0){
+                throw syntaxError("expected a value for a symbol to bind");
+            }
+            if (binding_vector && binding_vector->get_elem().size() % 2 != 0){
                 throw syntaxError("expected a value for a symbol to bind");
             }
 
             Env let_env(&env);
-
-            for (std::size_t i = 0; i < binding_list->get_elem().size(); i += 2){
-                auto symbol = dynamic_cast<MalSymbol*>(binding_list->get_elem()[i]);
+            MalSequence* sequence = binding_list ? static_cast<MalSequence*>(binding_list) : static_cast<MalSequence*>(binding_vector);
+            for (std::size_t i = 0; i < sequence->get_elem().size(); i += 2){
+                auto symbol = dynamic_cast<MalSymbol*>(sequence->get_elem()[i]);
                 if (!symbol) throw syntaxError("let* binding name must be symbol");
-                auto value = EVAL(binding_list->get_elem()[i + 1], let_env);
+                auto value = EVAL(sequence->get_elem()[i + 1], let_env);
                 let_env.set(symbol->name(), value);
             }
 
