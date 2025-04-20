@@ -81,26 +81,36 @@ class MalSymbol final : public MalAtom {
         [[nodiscard]] std::string to_string() const override;
 };
 
-class MalList final : public MalStruct {
-        std::vector<MalType*> elements_;
+class MalSequence : public MalStruct {
+protected:
+    std::vector<MalType*> elements_;
 
+    [[nodiscard]] std::vector<MalType*> elem_clone() const;
+    explicit MalSequence(std::vector<MalType*> elements);
+    MalSequence(std::initializer_list<MalType*> elements);
+    [[nodiscard]] std::string to_string() const override;
+    [[nodiscard]] MalSequence* clone() const override = 0;
+public:
+    std::vector<MalType*>& get_elem();
+    ~MalSequence() override;
+};
+
+class MalList final : public MalSequence {
     public:
         explicit MalList(std::vector<MalType*> elements);
         MalList(std::initializer_list<MalType*> elements);
-        std::vector<MalType*>& get_elem();
         [[nodiscard]] std::string to_string() const override;
         [[nodiscard]] MalList* clone() const override;
-        ~MalList() override;
+        ~MalList() override = default;
 };
 
-class MalVector final : public MalStruct {
-        std::vector<MalType*> elements_;
+class MalVector final : public MalSequence {
     public:
         explicit MalVector(std::vector<MalType*> elements);
-        std::vector<MalType*>& get_elem();
+        MalVector(std::initializer_list<MalType*> elements);
         [[nodiscard]] std::string to_string() const override;
         [[nodiscard]] MalVector* clone() const override;
-        ~MalVector() override;
+        ~MalVector() override = default;
 };
 
 class MalKeyword final : public MalAtom {

@@ -31,7 +31,7 @@ auto MalType::isString(const std::string &token) -> bool {
 
     const std::string content = token.substr(1, token.length() - 2);
 
-    for (size_t i = 0; i < content.length(); ++i) {
+    for (std::size_t i = 0; i < content.length(); ++i) {
         if (content[i] == '\\') {
             if (i == content.length() - 1 ||
                 (content[i + 1] != 'n' && content[i + 1] != 't' && content[i + 1] != '\\' &&
@@ -119,72 +119,78 @@ std::string MalSymbol::name() const {
     return this->name_;
 }
 
+MalSequence::MalSequence(std::vector<MalType *> elements)
+    : elements_(std::move(elements)) {}
+
+MalSequence::MalSequence(std::initializer_list<MalType *> elements)
+    : elements_(elements) {}
+
+std::vector<MalType *> &MalSequence::get_elem() {
+    return this->elements_;
+}
+
+std::string MalSequence::to_string() const {
+    std::stringstream ss;
+    bool first = true;
+    for (const auto& element : this->elements_) {
+        if (!first) {
+            ss << " ";
+        }
+        ss << element->to_string();
+        first = false;
+    }
+    return ss.str();
+}
+
+MalSequence::~MalSequence() {
+    for (const auto& e: this->elements_) {
+        delete e;
+    }
+}
+
+std::vector<MalType *> MalSequence::elem_clone() const {
+    std::vector<MalType*> copied;
+    for (auto* e : elements_) {
+        copied.push_back(e->clone());
+    }
+    return copied;
+}
+
 MalList::MalList(std::vector<MalType*> elements)
-        : elements_(std::move(elements)) {}
+        : MalSequence(std::move(elements)) {}
 
 auto MalList::to_string() const -> std::string {
     std::stringstream ss;
     ss << "(";
-    bool first = true;
-    for (const auto& element : elements_) {
-        if (!first) {
-            ss << " ";
-        }
-        ss << element->to_string();
-        first = false;
-    }
+    ss << MalSequence::to_string();
     ss << ")";
     return ss.str();
 }
 
-MalList::~MalList() {
-    for (const auto& e: this->elements_) {
-        delete e;
-    }
-}
-
 MalList::MalList(std::initializer_list<MalType *> elements)
-    : elements_(elements) {}
+    : MalSequence(elements) {}
 
 MalList *MalList::clone() const {
-    return new MalList(*this);
-}
-
-std::vector<MalType *> &MalList::get_elem() {
-    return this->elements_;
+    return new MalList(this->elem_clone());
 }
 
 MalVector::MalVector(std::vector<MalType *> elements)
-    : elements_(std::move(elements)) {}
+    : MalSequence(std::move(elements)) {}
 
 auto MalVector::to_string() const -> std::string {
     std::stringstream ss;
     ss << "[";
-    bool first = true;
-    for (const auto& element : elements_) {
-        if (!first) {
-            ss << " ";
-        }
-        ss << element->to_string();
-        first = false;
-    }
+    ss << MalSequence::to_string();
     ss << "]";
     return ss.str();
 }
 
-MalVector::~MalVector() {
-    for (const auto& e: this->elements_) {
-        delete e;
-    }
-}
-
 MalVector *MalVector::clone() const {
-    return new MalVector(*this);
+    return new MalVector(this->elem_clone());
 }
 
-std::vector<MalType *> &MalVector::get_elem() {
-    return this->elements_;
-}
+MalVector::MalVector(std::initializer_list<MalType *> elements)
+    : MalSequence(elements) {}
 
 MalKeyword::MalKeyword(std::string name)
         : name_(std::move(name)) {}
@@ -228,7 +234,11 @@ MalMap::~MalMap() {
 }
 
 MalMap *MalMap::clone() const {
-    return new MalMap(*this);
+    std::map<MalType*, MalType*> copied;
+    for (const auto& [k, v] : elements_) {
+        copied.insert({k->clone(), v->clone()});
+    }
+    return new MalMap(copied);
 }
 
 std::map<MalType *, MalType *> &MalMap::get_elem() {
@@ -242,11 +252,11 @@ MalMetaData::~MalMetaData() {
 }
 
 std::string MalMetaData::to_string() const {
-    return std::string();
+    return std::string(); // todo
 }
 
 MalMap *MalMetaData::get_map() {
-    return nullptr;
+    return nullptr; // todo
 }
 
 MalType *MalMetaData::get(MalType *key) {
@@ -259,7 +269,7 @@ void MalMetaData::put(MalType *key, MalType *val) {
 }
 
 MalMetaData *MalMetaData::clone() const {
-    return new MalMetaData(*this);
+    return new MalMetaData(this->data_->clone());
 }
 
 MalSyntaxQuote::MalSyntaxQuote(MalType *expr) : expr_(expr) {}
@@ -352,7 +362,7 @@ MalMetaSymbol::~MalMetaSymbol() {
 }
 
 MalMetaSymbol *MalMetaSymbol::clone() const {
-    return new MalMetaSymbol(*this);
+    return new MalMetaSymbol(meta_->clone(), value_->clone());
 }
 
 
