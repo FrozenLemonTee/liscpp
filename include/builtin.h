@@ -8,6 +8,10 @@ MalType* operator_plus(const std::vector<MalType*>& args);
 MalType* operator_minus(const std::vector<MalType*>& args);
 MalType* operator_multiply(const std::vector<MalType*>& args);
 MalType* operator_divide(const std::vector<MalType*>& args);
-
+MalType* prn(const std::vector<MalType*>& args);
+MalType* list(const std::vector<MalType*>& args);
+MalType* is_list(const std::vector<MalType*>& args);
+MalType* is_empty(const std::vector<MalType*>& args);
+MalType* count(const std::vector<MalType*>& args);
 
 #endif //BUILTIN_H
