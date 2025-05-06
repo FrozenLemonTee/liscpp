@@ -68,7 +68,7 @@ MalType* EVAL(MalType* input, Env& env) {
                 throw syntaxError("expected a value for a symbol to bind");
             }
 
-            Env let_env(&env);
+            Env let_env(&env, false);
             MalSequence* sequence = binding_list ? static_cast<MalSequence*>(binding_list) : static_cast<MalSequence*>(binding_vector);
             for (std::size_t i = 0; i < sequence->get_elem().size(); i += 2){
                 auto symbol = dynamic_cast<MalSymbol*>(sequence->get_elem()[i]);
