@@ -7,10 +7,17 @@ void Env::builtin_register() {
     this->add("-", new MalFunction(operator_minus));
     this->add("*", new MalFunction(operator_multiply));
     this->add("/", new MalFunction(operator_divide));
+    this->add("prn", new MalFunction(prn));
+    this->add("list", new MalFunction(list));
+    this->add("list?", new MalFunction(is_list));
+    this->add("empty?", new MalFunction(is_empty));
+    this->add("count", new MalFunction(count));
 }
 
-Env::Env(Env* env) : symbols(), host_env(env) {
-    this->builtin_register();
+Env::Env(Env *host, bool is_global) : symbols(), host_env(host) {
+    if (is_global){
+        this->builtin_register();
+    }
 }
 
 void Env::add(const std::string& name, MalType *symbol) {

@@ -12,7 +12,7 @@ class Env {
 
     void builtin_register();
 public:
-    explicit Env(Env* env = nullptr);
+    explicit Env(Env *host = nullptr, bool is_global = true);
     void add(const std::string& name, MalType* symbol);
     MalType* get(const std::string& name);
     void set(const std::string& name, MalType* symbol);
