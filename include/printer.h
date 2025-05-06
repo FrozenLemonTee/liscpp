@@ -6,7 +6,7 @@
 
 class Printer {
 public:
-    static std::string pr_str(MalType* mal_type);
+    static std::string pr_str(const MalType* mal_object);
 };
 
 #endif //PRINTER_H

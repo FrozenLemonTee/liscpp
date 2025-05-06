@@ -1,5 +1,5 @@
 #include "printer.h"
 
-std::string Printer::pr_str(MalType *mal_type) {
-    return mal_type->to_string();
+std::string Printer::pr_str(const MalType* const mal_object) {
+    return mal_object->to_string();
 }
