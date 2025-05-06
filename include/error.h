@@ -20,4 +20,10 @@ public:
     explicit valueError(const std::string& arg);
 };
 
+class argInvalidError : public std::runtime_error {
+    std::string msg;
+public:
+    explicit argInvalidError(const std::string& arg);
+};
+
 #endif //ERROR_H

@@ -8,3 +8,6 @@ typeError::typeError(const std::string &arg)
 
 valueError::valueError(const std::string &arg)
     : runtime_error(arg) {}
+
+argInvalidError::argInvalidError(const std::string &arg)
+    : runtime_error(arg) {}
