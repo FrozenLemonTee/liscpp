@@ -1,6 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
-#include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -20,6 +20,7 @@ class MalType {
         static bool isString(const std::string& token);
 
         virtual ~MalType();
+        virtual bool equal(const MalType*) const = 0;
         [[nodiscard]] virtual MalType* clone() const = 0;
         [[nodiscard]] virtual std::string to_string() const = 0;
 };
@@ -41,6 +42,8 @@ class MalNil final : public MalAtom {
     public:
         explicit MalNil(std::nullptr_t val = std::nullptr_t{});
         [[nodiscard]] std::nullptr_t& get_elem();
+
+        bool equal(const MalType *type) const override;
         [[nodiscard]] MalNil* clone() const override;
         [[nodiscard]] std::string to_string() const override;
 };
@@ -50,6 +53,8 @@ class MalBool final : public MalAtom {
     public:
         explicit MalBool(bool val);
         [[nodiscard]] bool& get_elem();
+
+        bool equal(const MalType *type) const override;
         [[nodiscard]] MalBool* clone() const override;
         [[nodiscard]] std::string to_string() const override;
 };
@@ -59,6 +64,7 @@ class MalInt final : public MalAtom {
     public:
         explicit MalInt(int64_t val);
         int64_t& get_elem();
+        bool equal(const MalType *type) const override;
         [[nodiscard]] MalInt* clone() const override;
         [[nodiscard]] std::string to_string() const override;
 };
@@ -68,6 +74,7 @@ class MalString final : public MalAtom {
     public:
         explicit MalString(const std::string&  val);
         std::string& get_elem();
+        bool equal(const MalType *type) const override;
         [[nodiscard]] MalString* clone() const override;
         [[nodiscard]] std::string to_string() const override;
 };
@@ -77,6 +84,7 @@ class MalSymbol final : public MalAtom {
     public:
         explicit MalSymbol(std::string name);
         [[nodiscard]] std::string name() const;
+        bool equal(const MalType *type) const override;
         [[nodiscard]] MalSymbol* clone() const override;
         [[nodiscard]] std::string to_string() const override;
 };
@@ -95,10 +103,26 @@ public:
     ~MalSequence() override;
 };
 
+class MalPair final : public MalStruct {
+    std::pair<MalType*, MalType*> data_;
+
+public:
+    MalPair(MalType* key, MalType* value);
+
+    [[nodiscard]] MalType* key() const;
+    [[nodiscard]] MalType* value() const;
+    void setValue(MalType* val);
+    bool equal(const MalType* other) const override;
+    [[nodiscard]] MalPair* clone() const override;
+    [[nodiscard]] std::string to_string() const override;
+    ~MalPair() override;
+};
+
 class MalList final : public MalSequence {
     public:
         explicit MalList(std::vector<MalType*> elements);
         MalList(std::initializer_list<MalType*> elements);
+        bool equal(const MalType *type) const override;
         [[nodiscard]] std::string to_string() const override;
         [[nodiscard]] MalList* clone() const override;
         ~MalList() override = default;
@@ -108,6 +132,7 @@ class MalVector final : public MalSequence {
     public:
         explicit MalVector(std::vector<MalType*> elements);
         MalVector(std::initializer_list<MalType*> elements);
+        bool equal(const MalType *type) const override;
         [[nodiscard]] std::string to_string() const override;
         [[nodiscard]] MalVector* clone() const override;
         ~MalVector() override = default;
@@ -118,16 +143,20 @@ class MalKeyword final : public MalAtom {
     public:
         explicit MalKeyword(std::string name);
         [[nodiscard]] std::string name() const;
+        bool equal(const MalType *type) const override;
         [[nodiscard]] std::string to_string() const override;
         [[nodiscard]] MalKeyword* clone() const override;
         ~MalKeyword() override = default;
 };
 
 class MalMap final : public MalStruct {
-    std::map<MalType*, MalType*> elements_;
+    std::set<MalPair*> elements_;
     public:
-    explicit MalMap(const std::map<MalType*, MalType*>& elements);
-    std::map<MalType*, MalType*>& get_elem();
+    explicit MalMap(const std::set<MalPair*>& elements);
+    std::set<MalPair*>& get_elem();
+    MalType* get(MalType* key) const;
+    void put(MalType* key, MalType* value);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] std::string to_string() const override;
     [[nodiscard]] MalMap* clone() const override;
     ~MalMap() override;
@@ -138,6 +167,7 @@ class MalMetaData final : public MalType {
 public:
     explicit MalMetaData(MalMap* map);
     ~MalMetaData() override;
+    bool equal(const MalType *type) const override;
     [[nodiscard]] std::string to_string() const override;
     [[nodiscard]] MalMetaData* clone() const override;
     MalMap* get_map();
@@ -157,6 +187,7 @@ public:
 class MalQuote final : public MalSyntaxQuote {
 public:
     explicit MalQuote(MalType* expr);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalQuote* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
@@ -164,6 +195,7 @@ public:
 class MalQuasiQuote final : public MalSyntaxQuote{
 public:
     explicit MalQuasiQuote(MalType* expr);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalQuasiQuote* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
@@ -171,6 +203,7 @@ public:
 class MalUnQuote final : public MalSyntaxQuote{
 public:
     explicit MalUnQuote(MalType* expr);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalUnQuote* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
@@ -178,6 +211,7 @@ public:
 class MalUnQuoteSplicing final : public MalSyntaxQuote{
 public:
     explicit MalUnQuoteSplicing(MalType* expr);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalUnQuoteSplicing* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
@@ -185,6 +219,7 @@ public:
 class MalDeref final : public MalSyntaxQuote {
 public:
     explicit MalDeref(MalType* expr);
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalDeref* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
@@ -196,17 +231,24 @@ public:
     explicit MalMetaSymbol(MalType* meta, MalType* value);
     [[nodiscard]] MalType* get_meta() const;
     [[nodiscard]] MalType* get_value() const;
+    bool equal(const MalType *type) const override;
     [[nodiscard]] std::string to_string() const override;
     [[nodiscard]] MalMetaSymbol* clone() const override;
     ~MalMetaSymbol() override;
 };
 
 class MalFunction : public MalType {
-    std::function<MalType*(std::vector<MalType*>)> func_;
 public:
-    explicit MalFunction(std::function<MalType*(std::vector<MalType*>)> fn);
-    MalType* operator()(const std::vector<MalType*>& args) const;
-    [[nodiscard]] MalType* apply(const std::vector<MalType*>& args) const;
+    using mal_func_args_list_type = const std::vector<MalType*>;
+    using mal_func_return_type = MalType*;
+    using mal_func_type = mal_func_return_type(mal_func_args_list_type);
+private:
+    std::function<mal_func_type> func_;
+public:
+    explicit MalFunction(std::function<mal_func_type> fn);
+    MalType* operator()(mal_func_args_list_type& args) const;
+    [[nodiscard]] MalType* apply(mal_func_args_list_type& args) const;
+    bool equal(const MalType *type) const override;
     [[nodiscard]] MalFunction* clone() const override;
     [[nodiscard]] std::string to_string() const override;
 };
