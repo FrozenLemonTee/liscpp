@@ -101,9 +101,9 @@ MalType* EVAL(MalType* input, Env& env) {
     }
 
     if (auto map = dynamic_cast<MalMap*>(input); map){
-        std::map<MalType*, MalType*> eval_args;
-        for (auto& [key, value]: map->get_elem()){
-            eval_args.insert({key, EVAL(value, env)});
+        std::set<MalPair*> eval_args;
+        for (auto& e: map->get_elem()){
+            eval_args.insert(new MalPair{e->key(), EVAL(e->value(), env)});
         }
         return new MalMap(eval_args);
     }
