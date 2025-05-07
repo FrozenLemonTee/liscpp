@@ -88,7 +88,7 @@ MalType* list(const std::vector<MalType *>& args) {
 
 MalType* is_list(const std::vector<MalType*>& args) {
     if (args.size() != 1){
-        throw argInvalidError("expected one arg, given " +
+        throw argInvalidError("expected 1 arg, given " +
                               std::to_string(args.size()) + " arg(s)");
     }
 
@@ -106,12 +106,49 @@ MalType* is_empty(const std::vector<MalType*>& args) {
 
 MalType* count(const std::vector<MalType *>& args) {
     if (args.size() != 1){
-        throw argInvalidError("expected one arg, given " +
+        throw argInvalidError("expected 1 arg, given " +
                               std::to_string(args.size()) + " arg(s)");
     }
     auto arg = dynamic_cast<MalList*>(args[0]);
     if (!arg){
         throw argInvalidError("wrong type");
     }
-    return new MalInt(arg->get_elem().size());
+    return new MalInt(static_cast<int64_t>(arg->get_elem().size()));
+}
+
+MalType* equal(const std::vector<MalType *> &args) {
+    if (args.size() != 2){
+        throw argInvalidError("expected 2 args, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    return new MalBool(args[0]->equal(args[1]));
+}
+
+MalType* less(const std::vector<MalType*>& args) {
+    return compare_ints(args, std::less<int64_t>{});
+}
+
+MalType* less_equal(const std::vector<MalType*>& args) {
+    return compare_ints(args, std::less_equal<int64_t>{});
+}
+
+MalType* greater(const std::vector<MalType*>& args) {
+    return compare_ints(args, std::greater<int64_t>{});
+}
+
+MalType* greater_equal(const std::vector<MalType*>& args) {
+    return compare_ints(args, std::greater_equal<int64_t>{});
+}
+
+MalType* compare_ints(const std::vector<MalType *> &args, const std::function<bool(int64_t, int64_t)>& cmp) {
+    if (args.size() != 2) {
+        throw argInvalidError("expected 2 args, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto lhs = dynamic_cast<MalInt*>(args[0]);
+    auto rhs = dynamic_cast<MalInt*>(args[1]);
+    if (!lhs || !rhs) {
+        throw argInvalidError("wrong type");
+    }
+    return new MalBool(cmp(lhs->get_elem(), rhs->get_elem()));
 }

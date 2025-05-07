@@ -12,6 +12,11 @@ void Env::builtin_register() {
     this->add("list?", new MalFunction(is_list));
     this->add("empty?", new MalFunction(is_empty));
     this->add("count", new MalFunction(count));
+    this->add("=", new MalFunction(equal));
+    this->add("<", new MalFunction(less));
+    this->add("<=", new MalFunction(less_equal));
+    this->add(">", new MalFunction(greater));
+    this->add(">=", new MalFunction(greater_equal));
 }
 
 Env::Env(Env *host, bool is_global) : symbols(), host_env(host) {
