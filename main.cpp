@@ -31,32 +31,61 @@ MalType* EVAL(MalType* input, Env& env) {
     }
 
     if (auto lst = dynamic_cast<MalList*>(input); lst){
-        if (lst->get_elem().empty()){
+        auto& lst_elem = lst->get_elem();
+        if (lst_elem.empty()){
             return lst;
         }
 
-        auto first = lst->get_elem()[0];
-        if (first && dynamic_cast<MalSymbol*>(first)->name() == "def!"){
-            if (lst->get_elem().size() != 3){
-                throw syntaxError("expected 2 args, but given " + std::to_string(lst->get_elem().size() - 1) + "arg(s)");
+        auto first = lst_elem[0];
+        auto first_sym = dynamic_cast<MalSymbol*>(first);
+        if (first_sym && first_sym->name() == "do"){
+            if (lst_elem.size() == 1){
+                return new MalNil;
             }
-            if (!dynamic_cast<MalSymbol*>(lst->get_elem()[1])){
+            for(size_t i = 1; i < lst_elem.size() - 1; i++){
+                EVAL(lst_elem[i], env); // may cause memory leak
+            }
+            return EVAL(lst_elem[lst_elem.size() - 1], env);
+        }
+
+        if (first_sym && first_sym->name() == "if"){
+            if (lst_elem.size() != 3 && lst_elem.size() != 4){
+                throw syntaxError("expected 2 or 3 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+            }
+            auto condition = dynamic_cast<MalBool*>(lst_elem[1]);
+            if (!condition){
+                throw syntaxError("expected a bool expression");
+            }
+            if (condition->get_elem()){
+                return EVAL(lst_elem[2], env);
+            }
+            if (lst_elem.size() == 4){
+                return EVAL(lst_elem[3], env);
+            }
+            return new MalNil;
+        }
+
+        if (first_sym && first_sym->name() == "def!"){
+            if (lst_elem.size() != 3){
+                throw syntaxError("expected 2 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+            }
+            if (!dynamic_cast<MalSymbol*>(lst_elem[1])){
                 throw syntaxError("expected a symbol");
             }
 
-            auto symbol = dynamic_cast<MalSymbol*>(lst->get_elem()[1]);
+            auto symbol = dynamic_cast<MalSymbol*>(lst_elem[1]);
             auto name = symbol->name();
-            MalType* value = EVAL(lst->get_elem()[2], env);
+            MalType* value = EVAL(lst_elem[2], env);
             env.set(name, value);
 
             return value;
         }
-        if (first && dynamic_cast<MalSymbol*>(first)->name() == "let*"){
-            if (lst->get_elem().size() != 3){
-                throw syntaxError("expected 2 args, but given " + std::to_string(lst->get_elem().size() - 1) + "arg(s)");
+        if (first_sym && first_sym->name() == "let*"){
+            if (lst_elem.size() != 3){
+                throw syntaxError("expected 2 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
             }
-            auto binding_list = dynamic_cast<MalList*>(lst->get_elem()[1]);
-            auto binding_vector = dynamic_cast<MalVector*>(lst->get_elem()[1]);
+            auto binding_list = dynamic_cast<MalList*>(lst_elem[1]);
+            auto binding_vector = dynamic_cast<MalVector*>(lst_elem[1]);
             if (!binding_list && !binding_vector){
                 throw syntaxError("expected a list or a vector for binding-list of let*");
             }
@@ -77,11 +106,11 @@ MalType* EVAL(MalType* input, Env& env) {
                 let_env.set(symbol->name(), value);
             }
 
-            return EVAL(lst->get_elem()[2], let_env)->clone();
+            return EVAL(lst_elem[2], let_env)->clone();
         }
 
         std::vector<MalType*> eval_args;
-        for (auto& arg: lst->get_elem()){
+        for (auto& arg: lst_elem){
             eval_args.emplace_back(EVAL(arg, env));
         }
 
