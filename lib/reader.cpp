@@ -80,7 +80,7 @@ auto Reader::read_struct(Reader &reader, const std::string& type) -> MalStruct* 
 }
 
 MalMap *Reader::read_map(Reader &reader) {
-    std::map<MalType*, MalType*> map;
+    std::set<MalPair*> map;
     MalType* key = nullptr;
     MalType* value = nullptr;
     std::string token;
@@ -97,7 +97,7 @@ MalMap *Reader::read_map(Reader &reader) {
             key = read_form(reader);
         } else {
             value = read_form(reader);
-            map.insert({key, value});
+            map.insert(new MalPair{key, value});
             key = nullptr;
         }
     }
