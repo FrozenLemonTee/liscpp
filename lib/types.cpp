@@ -207,7 +207,7 @@ bool MalList::equal(const MalType *type) const {
     if (!other_list){
         return false;
     }
-    size_t i;
+    std::size_t i;
     for (i = 0; i < this->elements_.size() && i < other_list->elements_.size(); ++i) {
         if (!this->elements_[i]->equal(other_list->elements_[i])){
             return false;
@@ -239,7 +239,7 @@ bool MalVector::equal(const MalType *type) const {
     if (!other_vector){
         return false;
     }
-    size_t i;
+    std::size_t i;
     for (i = 0; i < this->elements_.size() && i < other_vector->elements_.size(); ++i) {
         if (!this->elements_[i]->equal(other_vector->elements_[i])){
             return false;
