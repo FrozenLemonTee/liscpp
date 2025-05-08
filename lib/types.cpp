@@ -1,8 +1,11 @@
 #include "types.h"
-
+#include "env.h"
+#include "error.h"
+#include "evaluator.h"
 #include <iomanip>
 #include <regex>
 #include <utility>
+
 
 auto MalType::isKeyword(const std::string &token) -> bool {
     return token[0] == ':';
@@ -496,10 +499,25 @@ bool MalMetaSymbol::equal(const MalType *type) const {
 
 
 MalFunction::MalFunction(std::function<mal_func_type> fn)
-    : func_(std::move(fn)) {}
+    : func_(std::move(fn)), is_builtin(true), params_list(nullptr), body_(nullptr), env_(nullptr) {}
+
+MalFunction::MalFunction(MalList *params, MalType *body, Env &env)
+    : func_(), is_builtin(false), params_list(params), body_(body), env_(&env) {}
 
 MalType *MalFunction::operator()(mal_func_args_list_type& args) const {
-    return this->func_(args);
+    if (this->is_builtin){
+        return this->func_(args);
+    }
+    std::vector<std::string> param_names;
+    for (MalType* param : this->params_list->get_elem()) {
+        auto sym = dynamic_cast<MalSymbol*>(param);
+        if (!sym) {
+            throw typeError("fn* parameters must be symbols");
+        }
+        param_names.push_back(sym->name());
+    }
+    Env local_env(this->env_, false);
+    return Evaluator::eval(this->body_, local_env);
 }
 
 MalType *MalFunction::apply(mal_func_args_list_type& args) const {

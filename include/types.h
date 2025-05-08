@@ -7,6 +7,7 @@
 #include <functional>
 
 
+class Env;
 class MalMetaData;
 
 class MalType {
@@ -244,8 +245,14 @@ public:
     using mal_func_type = mal_func_return_type(mal_func_args_list_type);
 private:
     std::function<mal_func_type> func_;
+    bool is_builtin;
+    MalList* params_list;
+    MalType* body_;
+    Env* env_;
+
 public:
     explicit MalFunction(std::function<mal_func_type> fn);
+    explicit MalFunction(MalList* params, MalType* body, Env& env);
     MalType* operator()(mal_func_args_list_type& args) const;
     [[nodiscard]] MalType* apply(mal_func_args_list_type& args) const;
     bool equal(const MalType *type) const override;
