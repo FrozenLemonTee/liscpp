@@ -109,6 +109,9 @@ MalType* count(const std::vector<MalType *>& args) {
         throw argInvalidError("expected 1 arg, given " +
                               std::to_string(args.size()) + " arg(s)");
     }
+    if (dynamic_cast<MalNil*>(args[0])){
+        return new MalInt(0);
+    }
     auto arg = dynamic_cast<MalList*>(args[0]);
     if (!arg){
         throw argInvalidError("wrong type");
