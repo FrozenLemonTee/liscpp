@@ -20,7 +20,8 @@ void Env::builtin_register() {
     this->add(">=", new MalFunction(greater_equal));
 }
 
-Env::Env(Env *host, bool is_global) : symbols(), host_env(host), global_(is_global) {
+Env::Env(Env *host, bool is_global)
+    : symbols(), global_(is_global), host_env(host) {
     if (this->global_){
         this->builtin_register();
     }
