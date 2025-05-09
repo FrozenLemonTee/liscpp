@@ -17,7 +17,7 @@ MalType* EVAL(MalType* input, Env& env) {
     return Evaluator::eval(input, env);
 }
 
-std::string PRINT(MalType* input) {
+std::string PRINT(const MalType* input) {
     return Printer::pr_str(input);
 }
 
