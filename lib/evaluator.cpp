@@ -7,13 +7,12 @@
 MalType* Evaluator::eval(MalType *input, Env &env) {
     if (MalType* dbg = env.get("DEBUG-EVAL")) {
         auto* b = dynamic_cast<MalBool*>(dbg);
-        auto* n = dynamic_cast<MalNil*>(dbg);
-        if (!(b && !b->get_elem()) && !n) {
+        if (const auto* n = dynamic_cast<MalNil*>(dbg); !(b && !b->get_elem()) && !n) {
             std::cout << "EVAL: " << input->to_string() << std::endl;
         }
     }
 
-    if (auto sym = dynamic_cast<MalSymbol*>(input); sym){
+    if (const auto sym = dynamic_cast<MalSymbol*>(input); sym){
         MalType* opt = env.get(sym->name());
         if (!opt){
             throw typeError("'" + sym->name() + "'" + " not found.");
@@ -21,24 +20,24 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
         return opt;
     }
 
-    if (auto lst = dynamic_cast<MalList*>(input); lst){
-        auto& lst_elem = lst->get_elem();
+    if (const auto lst = dynamic_cast<MalList*>(input); lst){
+        const auto& lst_elem = lst->get_elem();
         if (lst_elem.empty()){
             return lst;
         }
 
-        auto first = lst_elem[0];
-        auto first_sym = dynamic_cast<MalSymbol*>(first);
+        const auto first = lst_elem[0];
+        const auto first_sym = dynamic_cast<MalSymbol*>(first);
         if (first_sym && first_sym->name() == "fn*"){
             if (lst_elem.size() != 3){
                 throw syntaxError("expected 2 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
             }
 
-            auto args_list = dynamic_cast<MalList*>(lst_elem[1]);
+            const auto args_list = dynamic_cast<MalList*>(lst_elem[1]);
             if (!args_list){
                 throw typeError("expected an arg list");
             }
-            auto function_body = dynamic_cast<MalList*>(lst_elem[2]);
+            MalType* function_body = lst_elem[2];
             if (!function_body){
                 throw typeError("expected an function body");
             }
@@ -87,8 +86,8 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
                 throw syntaxError("expected a symbol");
             }
 
-            auto symbol = dynamic_cast<MalSymbol*>(lst_elem[1]);
-            auto name = symbol->name();
+            const auto symbol = dynamic_cast<MalSymbol*>(lst_elem[1]);
+            const auto name = symbol->name();
             MalType* value = eval(lst_elem[2], env);
             env.set(name, value);
 
@@ -98,8 +97,8 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
             if (lst_elem.size() != 3){
                 throw syntaxError("expected 2 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
             }
-            auto binding_list = dynamic_cast<MalList*>(lst_elem[1]);
-            auto binding_vector = dynamic_cast<MalVector*>(lst_elem[1]);
+            const auto binding_list = dynamic_cast<MalList*>(lst_elem[1]);
+            const auto binding_vector = dynamic_cast<MalVector*>(lst_elem[1]);
             if (!binding_list && !binding_vector){
                 throw syntaxError("expected a list or a vector for binding-list of let*");
             }
@@ -113,10 +112,13 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
 
             Env let_env(&env, false);
             MalSequence* sequence = binding_list ? static_cast<MalSequence*>(binding_list) : static_cast<MalSequence*>(binding_vector);
+            if (!sequence) {
+                throw syntaxError("");
+            }
             for (std::size_t i = 0; i < sequence->get_elem().size(); i += 2){
-                auto symbol = dynamic_cast<MalSymbol*>(sequence->get_elem()[i]);
+                const auto symbol = dynamic_cast<MalSymbol*>(sequence->get_elem()[i]);
                 if (!symbol) throw syntaxError("let* binding name must be symbol");
-                auto value = eval(sequence->get_elem()[i + 1], let_env);
+                const auto value = eval(sequence->get_elem()[i + 1], let_env);
                 let_env.set(symbol->name(), value);
             }
 
@@ -128,22 +130,22 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
             eval_args.emplace_back(eval(arg, env));
         }
 
-        auto fn = dynamic_cast<MalFunction*>(eval_args[0]);
+        const auto fn = dynamic_cast<MalFunction*>(eval_args[0]);
         if (!fn){
             throw typeError(eval_args[0]->to_string() + " is not a function");
         }
         return fn->apply({eval_args.begin() + 1, eval_args.end()});
     }
 
-    if (auto vec = dynamic_cast<MalVector*>(input); vec){
+    if (const auto vec = dynamic_cast<MalVector*>(input); vec){
         std::vector<MalType*> eval_args;
-        for (auto& arg: vec->get_elem()){
+        for (const auto& arg: vec->get_elem()){
             eval_args.emplace_back(eval(arg, env));
         }
         return new MalVector(eval_args);
     }
 
-    if (auto map = dynamic_cast<MalMap*>(input); map){
+    if (const auto map = dynamic_cast<MalMap*>(input); map){
         std::set<MalPair*> eval_args;
         for (auto& e: map->get_elem()){
             eval_args.insert(new MalPair{e->key(), eval(e->value(), env)});
