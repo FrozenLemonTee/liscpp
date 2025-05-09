@@ -70,17 +70,13 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
             if (lst_elem.size() != 3 && lst_elem.size() != 4){
                 throw syntaxError("expected 2 or 3 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
             }
-            auto condition = dynamic_cast<MalBool*>(lst_elem[1]);
-            if (!condition){
-                throw syntaxError("expected a bool expression");
-            }
-            if (condition->get_elem()){
+            MalType* cond = eval(lst_elem[1], env);
+            const bool truthy = (!dynamic_cast<MalBool*>(cond) || dynamic_cast<MalBool*>(cond)->get_elem())
+                          && !dynamic_cast<MalNil*>(cond);
+            if (truthy) {
                 return eval(lst_elem[2], env);
             }
-            if (lst_elem.size() == 4){
-                return eval(lst_elem[3], env);
-            }
-            return new MalNil;
+            return lst_elem.size() == 4 ? eval(lst_elem[3], env) : new MalNil;
         }
 
         if (first_sym && first_sym->name() == "def!"){
