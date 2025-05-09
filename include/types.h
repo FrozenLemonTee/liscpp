@@ -238,7 +238,7 @@ public:
     ~MalMetaSymbol() override;
 };
 
-class MalFunction : public MalType {
+class MalFunction final : public MalType {
 public:
     using mal_func_args_list_type = const std::vector<MalType*>;
     using mal_func_return_type = MalType*;
@@ -246,14 +246,14 @@ public:
 private:
     std::function<mal_func_type> func_;
     bool is_builtin;
-    MalList* params_list;
+    MalList* args_list;
     MalType* body_;
     Env* env_;
 
 public:
     explicit MalFunction(std::function<mal_func_type> fn);
-    explicit MalFunction(MalList* params, MalType* body, Env& env);
-    MalType* operator()(mal_func_args_list_type& args) const;
+    explicit MalFunction(MalList* args, MalType* body, Env* env);
+    MalType* operator()(mal_func_args_list_type& params) const;
     [[nodiscard]] MalType* apply(mal_func_args_list_type& args) const;
     bool equal(const MalType *type) const override;
     [[nodiscard]] MalFunction* clone() const override;
