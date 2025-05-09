@@ -8,7 +8,10 @@ void Env::builtin_register() {
     this->add("-", new MalFunction(operator_minus));
     this->add("*", new MalFunction(operator_multiply));
     this->add("/", new MalFunction(operator_divide));
+    this->add("str", new MalFunction(str));
+    this->add("pr-str", new MalFunction(pr_str));
     this->add("prn", new MalFunction(prn));
+    this->add("println", new MalFunction(println));
     this->add("list", new MalFunction(list));
     this->add("list?", new MalFunction(is_list));
     this->add("empty?", new MalFunction(is_empty));
@@ -18,6 +21,7 @@ void Env::builtin_register() {
     this->add("<=", new MalFunction(less_equal));
     this->add(">", new MalFunction(greater));
     this->add(">=", new MalFunction(greater_equal));
+    this->add("not", new MalFunction(not_func));
 }
 
 Env::Env(Env *host, bool is_global)
