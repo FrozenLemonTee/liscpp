@@ -52,12 +52,8 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
                 eval_args_list.emplace_back(sym->name());
             }
 
-            auto func = std::function([eval_args_list, function_body, env](MalFunction::mal_func_args_list_type& args) -> MalType*{
-                Env local(const_cast<Env*>(&env), eval_args_list, args);
-                return Evaluator::eval(function_body, local);
-            });
-
-            return new MalFunction(func);
+            const auto local_env = new Env(&env, false);
+            return new MalFunction(args_list, function_body, local_env);
         }
 
         if (first_sym && first_sym->name() == "do"){
