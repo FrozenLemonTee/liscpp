@@ -504,20 +504,22 @@ MalFunction::MalFunction(std::function<mal_func_type> fn)
 MalFunction::MalFunction(MalList *params, MalType *body, Env &env)
     : func_(), is_builtin(false), params_list(params), body_(body), env_(&env) {}
 
-MalType *MalFunction::operator()(mal_func_args_list_type& args) const {
+MalType *MalFunction::operator()(mal_func_args_list_type& params) const {
     if (this->is_builtin){
-        return this->func_(args);
+        return this->func_(params);
     }
-    std::vector<std::string> param_names;
-    for (MalType* param : this->params_list->get_elem()) {
-        auto sym = dynamic_cast<MalSymbol*>(param);
+    const auto& args_list_elems = this->args_list->get_elem();
+    const auto size = args_list_elems.size();
+    std::vector<std::string> args_names(size);
+    for (std::size_t i = 0; i < size; ++i) {
+        const auto sym = dynamic_cast<MalSymbol*>(args_list_elems[i]);
         if (!sym) {
             throw typeError("fn* parameters must be symbols");
         }
-        param_names.push_back(sym->name());
+        args_names[i] = sym->name();
     }
-    Env local_env(this->env_, false);
-    return Evaluator::eval(this->body_, local_env);
+    const auto local_env = new Env(this->env_, args_names, params);
+    return Evaluator::eval(this->body_, *local_env);
 }
 
 MalType *MalFunction::apply(mal_func_args_list_type& args) const {
