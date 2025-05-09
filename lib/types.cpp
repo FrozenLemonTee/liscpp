@@ -109,7 +109,13 @@ bool MalInt::equal(const MalType *type) const {
     return other_int && this->val_ == other_int->val_;
 }
 
-MalString::MalString(const std::string& val) : val_(std::move(val.substr(1, val.length() - 2))) {}
+MalString::MalString(const std::string& val) {
+    if (val.length() >= 2 && val.front() == '"' && val.back() == '"') {
+        val_ = val.substr(1, val.length() - 2);
+    } else {
+        val_ = val;
+    }
+}
 
 auto MalString::to_string() const -> std::string {
     return "\"" + val_ + "\"";
