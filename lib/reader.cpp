@@ -116,19 +116,19 @@ MalSyntaxQuote *Reader::read_syntax_quote(Reader &reader, const std::string &typ
     reader.next();
     MalSyntaxQuote* quote = nullptr;
     if (type == "'"){
-        quote = new MalQuote(Reader::read_form(reader));
+        quote = new MalQuote(read_form(reader));
     } else if (type == "`"){
-        quote = new MalQuasiQuote(Reader::read_form(reader));
+        quote = new MalQuasiQuote(read_form(reader));
     } else if (type == "~"){
-        quote = new MalUnQuote(Reader::read_form(reader));
+        quote = new MalUnQuote(read_form(reader));
     } else if (type == "~@"){
-        quote = new MalUnQuoteSplicing(Reader::read_form(reader));
+        quote = new MalUnQuoteSplicing(read_form(reader));
     } else if (type == "@"){
-        quote = new MalDeref(Reader::read_form(reader));
+        quote = new MalDeref(read_form(reader));
     } else if (type == "^"){
-        MalType* meta = Reader::read_form(reader);
+        MalType* meta = read_form(reader);
         reader.next();
-        MalType* value = Reader::read_form(reader);
+        MalType* value = read_form(reader);
         quote = new MalMetaSymbol(meta, value);
     }
     return quote;
