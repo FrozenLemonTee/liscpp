@@ -497,7 +497,7 @@ MalMetaSymbol *MalMetaSymbol::clone() const {
 }
 
 bool MalMetaSymbol::equal(const MalType *type) const {
-    auto other_meta_symbol = dynamic_cast<const MalMetaSymbol*>(type);
+    const auto other_meta_symbol = dynamic_cast<const MalMetaSymbol*>(type);
     return other_meta_symbol &&
            this->meta_->equal(other_meta_symbol->meta_) &&
            this->value_->equal(other_meta_symbol->value_);
@@ -505,10 +505,10 @@ bool MalMetaSymbol::equal(const MalType *type) const {
 
 
 MalFunction::MalFunction(std::function<mal_func_type> fn)
-    : func_(std::move(fn)), is_builtin(true), params_list(nullptr), body_(nullptr), env_(nullptr) {}
+    : func_(std::move(fn)), is_builtin(true), args_list(nullptr), body_(nullptr), env_(nullptr) {}
 
-MalFunction::MalFunction(MalList *params, MalType *body, Env &env)
-    : func_(), is_builtin(false), params_list(params), body_(body), env_(&env) {}
+MalFunction::MalFunction(MalList *args, MalType *body, Env* env)
+    : is_builtin(false), args_list(args), body_(body), env_(env) {}
 
 MalType *MalFunction::operator()(mal_func_args_list_type& params) const {
     if (this->is_builtin){
@@ -540,7 +540,7 @@ std::string MalFunction::to_string() const {
     return "#<function>";
 }
 
-bool MalFunction::equal(const MalType *type) const {
+bool MalFunction::equal(const MalType*) const {
     return false;
 }
 
@@ -556,7 +556,7 @@ MalType *MalPair::value() const {
 }
 
 bool MalPair::equal(const MalType *other) const {
-    auto other_pair = dynamic_cast<const MalPair*>(other);
+    const auto other_pair = dynamic_cast<const MalPair*>(other);
     return other_pair &&
            this->key()->equal(other_pair->key()) &&
            this->value()->equal(other_pair->value());
