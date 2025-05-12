@@ -132,7 +132,7 @@ MalType* is_empty(const std::vector<MalType*>& args) {
         return new MalBool(false);
     }
 
-    const auto arg = dynamic_cast<MalList*>(args[0]);
+    const auto arg = dynamic_cast<MalSequence*>(args[0]);
     return new MalBool(arg && arg->get_elem().empty());
 }
 

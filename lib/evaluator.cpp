@@ -33,7 +33,7 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
                 throw syntaxError("expected 2 args, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
             }
 
-            const auto args_list = dynamic_cast<MalList*>(lst_elem[1]);
+            const auto args_list = dynamic_cast<MalSequence*>(lst_elem[1]);
             if (!args_list){
                 throw typeError("expected an arg list");
             }

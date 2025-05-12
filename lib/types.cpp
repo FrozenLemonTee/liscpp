@@ -159,6 +159,21 @@ MalSequence::MalSequence(std::vector<MalType *> elements)
 MalSequence::MalSequence(std::initializer_list<MalType *> elements)
     : elements_(elements) {}
 
+bool MalSequence::equal(const MalType* type) const
+{
+    auto other_sequence = dynamic_cast<const MalSequence*>(type);
+    if (!other_sequence){
+        return false;
+    }
+    std::size_t i;
+    for (i = 0; i < this->elements_.size() && i < other_sequence->elements_.size(); ++i) {
+        if (!this->elements_[i]->equal(other_sequence->elements_[i])){
+            return false;
+        }
+    }
+    return i == this->elements_.size() && i == other_sequence->elements_.size();
+}
+
 std::vector<MalType *> &MalSequence::get_elem() {
     return this->elements_;
 }
@@ -208,20 +223,6 @@ MalList *MalList::clone() const {
     return new MalList(this->elem_clone());
 }
 
-bool MalList::equal(const MalType *type) const {
-    auto other_list = dynamic_cast<const MalList*>(type);
-    if (!other_list){
-        return false;
-    }
-    std::size_t i;
-    for (i = 0; i < this->elements_.size() && i < other_list->elements_.size(); ++i) {
-        if (!this->elements_[i]->equal(other_list->elements_[i])){
-            return false;
-        }
-    }
-    return i == this->elements_.size() && i == other_list->elements_.size();
-}
-
 MalVector::MalVector(std::vector<MalType *> elements)
     : MalSequence(std::move(elements)) {}
 
@@ -239,20 +240,6 @@ MalVector *MalVector::clone() const {
 
 MalVector::MalVector(std::initializer_list<MalType *> elements)
     : MalSequence(elements) {}
-
-bool MalVector::equal(const MalType *type) const {
-    auto other_vector = dynamic_cast<const MalVector*>(type);
-    if (!other_vector){
-        return false;
-    }
-    std::size_t i;
-    for (i = 0; i < this->elements_.size() && i < other_vector->elements_.size(); ++i) {
-        if (!this->elements_[i]->equal(other_vector->elements_[i])){
-            return false;
-        }
-    }
-    return i == this->elements_.size() && i == other_vector->elements_.size();
-}
 
 MalKeyword::MalKeyword(std::string name)
         : name_(std::move(name)) {}

@@ -97,7 +97,8 @@ protected:
     [[nodiscard]] std::vector<MalType*> elem_clone() const;
     explicit MalSequence(std::vector<MalType*> elements);
     MalSequence(std::initializer_list<MalType*> elements);
-    [[nodiscard]] std::string to_string() const override;
+    bool equal(const MalType* type) const override;
+    [[nodiscard]] std::string to_string(bool print_readably) const override;
     [[nodiscard]] MalSequence* clone() const override = 0;
 public:
     std::vector<MalType*>& get_elem();
