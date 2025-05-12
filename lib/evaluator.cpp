@@ -8,7 +8,7 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
     if (MalType* dbg = env.get("DEBUG-EVAL")) {
         auto* b = dynamic_cast<MalBool*>(dbg);
         if (const auto* n = dynamic_cast<MalNil*>(dbg); !(b && !b->get_elem()) && !n) {
-            std::cout << "EVAL: " << input->to_string() << std::endl;
+            std::cout << "EVAL: " << input->to_string(true) << std::endl;
         }
     }
 
@@ -132,7 +132,7 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
 
         const auto fn = dynamic_cast<MalFunction*>(eval_args[0]);
         if (!fn){
-            throw typeError(eval_args[0]->to_string() + " is not a function");
+            throw typeError(eval_args[0]->to_string(true) + " is not a function");
         }
         return fn->apply({eval_args.begin() + 1, eval_args.end()});
     }

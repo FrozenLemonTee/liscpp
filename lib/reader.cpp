@@ -149,12 +149,33 @@ auto Reader::read_atom(const Reader &reader) -> MalAtom* {
         if (!MalType::isString(token)) {
             throw syntaxError("expected closed string");
         }
-        return new MalString(token);
+            return new MalString(unescape_string(token));
     }
     if (MalType::isKeyword(token))
         return new MalKeyword(token.substr(1));
 
     return new MalSymbol(token);
+}
+
+std::string Reader::unescape_string(const std::string& str)
+{
+    std::string result;
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '\\' && i + 1 < str.length()) {
+            ++i;
+            switch (str[i]) {
+                case 'n': result += '\n'; break;
+                case 't': result += '\t'; break;
+                case 'r': result += '\r'; break;
+                case '"': result += '\"'; break;
+                case '\\': result += '\\'; break;
+                default: result += str[i];
+            }
+        } else {
+            result += str[i];
+        }
+    }
+    return result;
 }
 
 Reader::Reader(std::vector<std::string> tokens, const size_t pos)

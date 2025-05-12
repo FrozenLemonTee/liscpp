@@ -80,37 +80,56 @@ MalType* operator_divide(const std::vector<MalType *> &args) {
 }
 
 MalType* str(const std::vector<MalType *>& args) {
+    const auto args_str = print_helper(args, false);
     std::stringstream ss;
-    for (const auto& object: args){
-        ss << Printer::pr_str(object);
+    for (const auto& s: args_str){
+        ss << s;
     }
     return new MalString(ss.str());
 }
 
 MalType* pr_str(const std::vector<MalType *>& args) {
+    const auto args_str = print_helper(args, true);
     std::stringstream ss;
     bool first = true;
-    for (const auto& object: args){
+    for (const auto& s: args_str){
         if (!first) {
             ss << " ";
         }
-        ss << Printer::pr_str(object);
+        ss << s;
         first = false;
     }
     return new MalString(ss.str());
 }
 
 MalType* prn(const std::vector<MalType*>& args) {
-    const auto returned = pr_str(args);
-    std::cout << dynamic_cast<MalString*>(returned)->get_elem();
-    delete returned;
-    return new MalNil;
+    const auto args_str = print_helper(args, true);
+    std::stringstream ss;
+    bool first = true;
+    for (const auto& s: args_str){
+        if (!first) {
+            ss << " ";
+        }
+        ss << s;
+        first = false;
+    }
+    std::cout << ss.str();
+    return new MalNil(false);
 }
 
 MalType* println(const std::vector<MalType *>& args) {
-    const auto returned = str(args);
-    std::cout << dynamic_cast<MalString*>(returned)->get_elem() << std::endl;
-    delete returned;
+    const auto args_str = print_helper(args, false);
+    std::stringstream ss;
+    bool first = true;
+    for (const auto& s: args_str){
+        if (!first) {
+            ss << " ";
+        }
+        ss << s;
+        first = false;
+    }
+    ss << "\n";
+    std::cout << ss.str();
     return new MalNil;
 }
 
