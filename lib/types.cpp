@@ -511,7 +511,7 @@ bool MalMetaSymbol::equal(const MalType *type) const {
 MalFunction::MalFunction(std::function<mal_func_type> fn)
     : func_(std::move(fn)), is_builtin(true), args_list(nullptr), body_(nullptr), env_(nullptr) {}
 
-MalFunction::MalFunction(MalList *args, MalType *body, Env* env)
+MalFunction::MalFunction(MalSequence *args, MalType *body, Env* env)
     : is_builtin(false), args_list(args), body_(body), env_(env) {}
 
 MalType *MalFunction::operator()(mal_func_args_list_type& params) const {
