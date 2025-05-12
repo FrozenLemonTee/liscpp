@@ -5,6 +5,8 @@
 
 MalType* compare_ints(const std::vector<MalType*>& args,
                       const std::function<bool(int64_t, int64_t)>& cmp);
+std::vector<std::string> print_helper(const std::vector<MalType*>& args, bool print_readably);
+
 
 MalType* operator_plus(const std::vector<MalType*>& args);
 MalType* operator_minus(const std::vector<MalType*>& args);
