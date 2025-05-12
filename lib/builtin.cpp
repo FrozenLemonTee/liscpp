@@ -206,3 +206,13 @@ MalType* compare_ints(const std::vector<MalType *> &args, const std::function<bo
     }
     return new MalBool(cmp(lhs->get_elem(), rhs->get_elem()));
 }
+
+std::vector<std::string> print_helper(const std::vector<MalType*>& args, const bool print_readably)
+{
+    std::vector<std::string> res;
+    for (const auto& arg: args)
+    {
+        res.emplace_back(Printer::pr_str(arg, print_readably));
+    }
+    return res;
+}
