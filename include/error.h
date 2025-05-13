@@ -26,4 +26,16 @@ public:
     explicit argInvalidError(const std::string& arg);
 };
 
+class IOError : public std::runtime_error {
+    std::string msg;
+public:
+    explicit IOError(const std::string& arg);
+};
+
+class REPLError : public std::runtime_error {
+    std::string msg;
+public:
+    explicit REPLError(const std::string& arg);
+};
+
 #endif //ERROR_H
