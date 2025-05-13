@@ -51,7 +51,7 @@ auto Reader::read_struct(Reader &reader, const std::string& type) -> MalStruct* 
     std::string token;
 
     if (!reader.hasNext()) {
-        throw syntaxError("expected closed struct");
+        throw syntaxError("unbalanced");
     }
 
     if (reader.peek() == "(" || reader.peek() == "[") {
@@ -76,7 +76,7 @@ auto Reader::read_struct(Reader &reader, const std::string& type) -> MalStruct* 
         return read_map(reader);
     }
 
-    throw syntaxError("expected closed struct");
+    throw syntaxError("unbalanced");
 }
 
 MalMap *Reader::read_map(Reader &reader) {
@@ -103,7 +103,7 @@ MalMap *Reader::read_map(Reader &reader) {
     }
 
     if (key != nullptr)
-        throw syntaxError("expected a value after the key");
+        throw syntaxError("unbalanced");
 
     return new MalMap(map);
 }

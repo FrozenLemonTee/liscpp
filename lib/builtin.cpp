@@ -166,18 +166,11 @@ MalType* count(const std::vector<MalType *>& args) {
     if (dynamic_cast<MalNil*>(args[0])){
         return new MalInt(0);
     }
-    const auto list = dynamic_cast<MalList*>(args[0]);
-    const auto vector = dynamic_cast<MalVector*>(args[0]);
-    const MalSequence* arg;
-    if (list) {
-        arg = list;
-    } else {
-        arg = vector;
-    }
-    if (!arg){
+    auto sequence = dynamic_cast<MalSequence*>(args[0]);
+    if (!sequence){
         throw argInvalidError("wrong type");
     }
-    return new MalInt(static_cast<int64_t>(const_cast<MalSequence*>(arg)->get_elem().size()));
+    return new MalInt(static_cast<int64_t>(sequence->get_elem().size()));
 }
 
 MalType* equal(const std::vector<MalType *> &args) {
