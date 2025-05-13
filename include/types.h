@@ -26,6 +26,17 @@ class MalType {
         [[nodiscard]] virtual std::string to_string(bool print_readably) const = 0;
 };
 
+class MalRef final : public MalType {
+    MalType* val_;
+public:
+    explicit MalRef(MalType* val);
+    MalType* get() const;
+    void set(MalType* val);
+    bool equal(const MalType* other) const override;
+    [[nodiscard]] MalType* clone() const override;
+    [[nodiscard]] std::string to_string(bool print_readably) const override;
+};
+
 class MalAtom : public MalType {
     public:
         [[nodiscard]] MalAtom* clone() const override = 0;

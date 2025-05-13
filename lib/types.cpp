@@ -64,6 +64,33 @@ std::nullptr_t& MalNil::get_elem() {
     return this->val_;
 }
 
+MalRef::MalRef(MalType *val) : val_(val) {}
+
+MalType *MalRef::get() const {
+    return this->val_;
+}
+
+void MalRef::set(MalType *val) {
+    this->val_ = val;
+}
+
+bool MalRef::equal(const MalType* other) const {
+    const auto other_ref = dynamic_cast<const MalRef*>(other);
+    return other_ref && this->val_->equal(other_ref->val_);
+}
+
+MalType* MalRef::clone() const {
+    return new MalRef(this->val_->clone());
+}
+
+std::string MalRef::to_string(bool print_readably) const {
+    std::stringstream ss;
+    ss << "(atom ";
+    ss << this->val_->to_string(print_readably);
+    ss << ")";
+    return ss.str();
+}
+
 MalNil::MalNil(const bool printable, const std::nullptr_t val) : val_(val), printable(printable) {}
 
 bool MalNil::equal(const MalType* type) const {
