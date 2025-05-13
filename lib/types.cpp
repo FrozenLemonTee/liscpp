@@ -527,7 +527,7 @@ MalType *MalFunction::operator()(mal_func_args_list_type& params) const {
         args_names[i] = sym->name();
     }
     const auto local_env = new Env(this->env_, args_names, params);
-    return Evaluator::eval(this->body_, *local_env);
+    return Evaluator::eval(this->body_, local_env);
 }
 
 MalType *MalFunction::apply(mal_func_args_list_type& args) const {

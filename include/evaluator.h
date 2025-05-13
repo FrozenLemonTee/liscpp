@@ -5,7 +5,7 @@
 
 class Evaluator {
 public:
-    static MalType* eval(MalType* input, Env& env);
+    static MalType* eval(MalType* input, Env* env);
 };
 
 #endif //EVALUATOR_H
