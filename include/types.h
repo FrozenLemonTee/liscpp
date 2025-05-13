@@ -100,9 +100,9 @@ protected:
     MalSequence(std::initializer_list<MalType*> elements);
     bool equal(const MalType* type) const override;
     [[nodiscard]] std::string to_string(bool print_readably) const override;
-    [[nodiscard]] MalSequence* clone() const override = 0;
 public:
     std::vector<MalType*>& get_elem();
+    [[nodiscard]] MalSequence* clone() const override = 0;
     ~MalSequence() override;
 };
 
