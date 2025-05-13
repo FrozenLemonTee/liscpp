@@ -110,7 +110,7 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
                 throw syntaxError("expected a value for a symbol to bind");
             }
 
-            Env let_env(&env, false);
+            Env* let_env = new Env(&env, false);
             MalSequence* sequence = binding_list ? static_cast<MalSequence*>(binding_list) : static_cast<MalSequence*>(binding_vector);
             if (!sequence) {
                 throw syntaxError("");
@@ -118,11 +118,11 @@ MalType* Evaluator::eval(MalType *input, Env &env) {
             for (std::size_t i = 0; i < sequence->get_elem().size(); i += 2){
                 const auto symbol = dynamic_cast<MalSymbol*>(sequence->get_elem()[i]);
                 if (!symbol) throw syntaxError("let* binding name must be symbol");
-                const auto value = eval(sequence->get_elem()[i + 1], let_env);
-                let_env.set(symbol->name(), value);
+                const auto value = eval(sequence->get_elem()[i + 1], *let_env);
+                let_env->set(symbol->name(), value);
             }
 
-            return eval(lst_elem[2], let_env)->clone();
+            return eval(lst_elem[2], *let_env)->clone();
         }
 
         std::vector<MalType*> eval_args;
