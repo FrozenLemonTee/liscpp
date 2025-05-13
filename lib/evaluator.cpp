@@ -3,6 +3,7 @@
 #include "env.h"
 #include "error.h"
 
+Env* Evaluator::repl_env = nullptr;
 
 MalType* Evaluator::eval(MalType *input, Env* env) {
     while (true){
@@ -175,4 +176,16 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
 
         return input;
     }
+}
+
+MalType* Evaluator::eval(MalType* input) {
+    if (!repl_env) {
+        throw REPLError("REPL environment not set.");
+    }
+
+    return eval(input, repl_env);
+}
+
+void Evaluator::set_env(Env *env) {
+    repl_env = env;
 }

@@ -23,7 +23,7 @@ std::string PRINT(const MalType* input) {
 
 int main(){
     Env global_env;
-
+    Evaluator::set_env(&global_env);
     while(true){
         std::cout << "user> ";
         std::string input;
