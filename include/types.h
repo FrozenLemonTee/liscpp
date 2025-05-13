@@ -253,6 +253,10 @@ private:
 public:
     explicit MalFunction(std::function<mal_func_type> fn);
     explicit MalFunction(MalSequence* args, MalType* body, Env* env);
+    [[nodiscard]] MalSequence* get_args_list() const;
+    [[nodiscard]] MalType* get_body() const;
+    [[nodiscard]] Env* get_env() const;
+    [[nodiscard]] bool is_builtin_func() const;
     MalType* operator()(mal_func_args_list_type& params) const;
     [[nodiscard]] MalType* apply(mal_func_args_list_type& args) const;
     bool equal(const MalType *type) const override;

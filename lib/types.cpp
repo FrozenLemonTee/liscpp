@@ -547,6 +547,22 @@ bool MalFunction::equal(const MalType*) const {
     return false;
 }
 
+MalSequence* MalFunction::get_args_list() const {
+    return this->args_list;
+}
+
+MalType* MalFunction::get_body() const {
+    return this->body_;
+}
+
+Env* MalFunction::get_env() const {
+    return this->env_;
+}
+
+bool MalFunction::is_builtin_func() const {
+    return this->is_builtin;
+}
+
 MalPair::MalPair(MalType *key, MalType *value)
     : data_(key, value) {}
 
