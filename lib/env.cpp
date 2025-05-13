@@ -1,5 +1,4 @@
 #include "env.h"
-#include <ranges>
 #include "builtin.h"
 #include "error.h"
 
@@ -46,12 +45,6 @@ MalType *Env::get(const std::string &name) {
 
 void Env::set(const std::string &name, MalType *symbol) {
     this->symbols[name] = symbol;
-}
-
-Env::~Env() {
-    for (const auto &symbol: this->symbols | std::views::values) {
-        delete symbol;
-    }
 }
 
 Env* Env::find(const std::string &name) {

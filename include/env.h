@@ -20,7 +20,6 @@ public:
     Env* find(const std::string& name);
     void set(const std::string& name, MalType* symbol);
     [[nodiscard]] Env* clone() const;
-    ~Env();
 };
 
 #endif //ENV_H
