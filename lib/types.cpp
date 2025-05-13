@@ -506,7 +506,6 @@ bool MalMetaSymbol::equal(const MalType *type) const {
            this->value_->equal(other_meta_symbol->value_);
 }
 
-
 MalFunction::MalFunction(std::function<mal_func_type> fn)
     : func_(std::move(fn)), is_builtin(true), args_list(nullptr), body_(nullptr), env_(nullptr) {}
 
