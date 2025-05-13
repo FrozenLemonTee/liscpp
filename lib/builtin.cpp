@@ -1,8 +1,11 @@
 #include <iostream>
 #include "builtin.h"
 #include <sstream>
+#include <fstream>
+#include "reader.h"
 #include "printer.h"
 #include "error.h"
+#include "evaluator.h"
 
 
 MalType* operator_plus(const std::vector<MalType *> &args) {
@@ -234,4 +237,129 @@ std::vector<std::string> print_helper(const std::vector<MalType*>& args, const b
         res.emplace_back(Printer::pr_str(arg, print_readably));
     }
     return res;
+}
+
+MalType* read_string(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto str = dynamic_cast<const MalString*>(args[0]);
+    if (!str){
+        throw argInvalidError("wrong type");
+    }
+    return Reader::read_str(str->to_string(false));
+}
+
+MalType* slurp(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto str = dynamic_cast<const MalString*>(args[0]);
+    if (!str){
+        throw argInvalidError("wrong type");
+    }
+    std::ifstream ifs(str->to_string(false));
+    if (!ifs){
+        throw IOError("Can not open file: " + str->to_string(false));
+    }
+    std::stringstream ss;
+    ss << ifs.rdbuf();
+    return new MalString(ss.str());
+}
+
+MalType* evals(const std::vector<MalType *>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    return Evaluator::eval(args[0]);
+}
+
+MalType* load_file(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto str = dynamic_cast<MalString*>(args[0]);
+    if (!str) {
+        throw argInvalidError("wrong type");
+    }
+
+    std::ifstream ifs(str->get_elem());
+    if (!ifs) {
+        throw IOError("Cannot open file: " + str->get_elem());
+    }
+
+    std::stringstream ss;
+    ss << ifs.rdbuf();
+
+    std::string wrapped_code = "(do " + ss.str() + "\nnil)";
+    auto expr = new MalString(wrapped_code);
+    return Evaluator::eval(Reader::read_str(expr->get_elem()));
+}
+
+MalType* atom(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    return new MalRef(args[0]);
+}
+
+MalType* is_atom(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    return new MalBool(dynamic_cast<const MalRef*>(args[0]));
+}
+
+MalType* deref(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    const auto ref = dynamic_cast<const MalRef*>(args[0]);
+    if (!ref){
+        throw argInvalidError("wrong type");
+    }
+    return ref->get();
+}
+
+MalType* reset(const std::vector<MalType*>& args) {
+    if (args.size() != 2) {
+        throw argInvalidError("expected 2 args, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto ref = dynamic_cast<MalRef*>(args[0]);
+    if (!ref){
+        throw argInvalidError("wrong type");
+    }
+    ref->set(args[1]);
+    return args[1];
+}
+
+MalType* swap(const std::vector<MalType*>& args) {
+    if (args.size() < 2) {
+        throw argInvalidError("expected at least 2 args, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+
+    auto ref = dynamic_cast<MalRef*>(args[0]);
+    auto fn = dynamic_cast<MalFunction*>(args[1]);
+    if (!ref || !fn) {
+        throw argInvalidError("wrong type");
+    }
+
+    std::vector<MalType*> fn_args;
+    fn_args.push_back(ref->get());
+    for (size_t i = 2; i < args.size(); ++i) {
+        fn_args.push_back(args[i]);
+    }
+
+    MalType* result = fn->apply(fn_args);
+    ref->set(result);
+    return result;
 }

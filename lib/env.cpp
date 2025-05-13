@@ -22,6 +22,15 @@ void Env::builtin_register() {
     this->add(">", new MalFunction(greater));
     this->add(">=", new MalFunction(greater_equal));
     this->add("not", new MalFunction(not_func));
+    this->add("read-string", new MalFunction(read_string));
+    this->add("slurp", new MalFunction(slurp));
+    this->add("eval", new MalFunction(evals));
+    this->add("load-file", new MalFunction(load_file));
+    this->add("atom", new MalFunction(atom));
+    this->add("atom?", new MalFunction(is_atom));
+    this->add("deref", new MalFunction(deref));
+    this->add("reset!", new MalFunction(reset));
+    this->add("swap!", new MalFunction(swap));
 }
 
 Env::Env(Env *host, const bool is_global)

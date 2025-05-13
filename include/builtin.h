@@ -26,5 +26,15 @@ MalType* less_equal(const std::vector<MalType*>& args);
 MalType* greater(const std::vector<MalType*>& args);
 MalType* greater_equal(const std::vector<MalType*>& args);
 MalType* not_func(const std::vector<MalType*>& args);
+MalType* read_string(const std::vector<MalType*>& args);
+MalType* slurp(const std::vector<MalType*>& args);
+MalType* evals(const std::vector<MalType*>& args);
+MalType* load_file(const std::vector<MalType*>& args);
+MalType* atom(const std::vector<MalType*>& args);
+MalType* is_atom(const std::vector<MalType*>& args);
+MalType* deref(const std::vector<MalType*>& args);
+MalType* reset(const std::vector<MalType*>& args);
+MalType* swap(const std::vector<MalType*>& args);
+
 
 #endif //BUILTIN_H
