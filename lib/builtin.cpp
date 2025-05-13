@@ -90,6 +90,7 @@ MalType* pr_str(const std::vector<MalType *>& args) {
     const auto args_str = print_helper(args, true);
     std::stringstream ss;
     bool first = true;
+    ss << "\"";
     for (const auto& s: args_str){
         if (!first) {
             ss << " ";
@@ -97,6 +98,7 @@ MalType* pr_str(const std::vector<MalType *>& args) {
         ss << s;
         first = false;
     }
+    ss << "\"";
     return new MalString(ss.str());
 }
 
@@ -112,7 +114,7 @@ MalType* prn(const std::vector<MalType*>& args) {
         first = false;
     }
     std::cout << ss.str();
-    return new MalNil(false);
+    return new MalNil;
 }
 
 MalType* println(const std::vector<MalType *>& args) {

@@ -123,10 +123,9 @@ auto MalString::to_string(const bool print_readably) const -> std::string {
 
     std::stringstream ss;
     ss << "\"";
-    for (const auto& ch: this->val_)
-    {
-        switch (ch)
-        {
+    for (const auto& ch: this->val_) {
+        switch (ch) {
+            case '\\': ss << "\\\\"; break;
             case '\n': ss << "\\n"; break;
             case '\t': ss << "\\t"; break;
             case '\r': ss << "\\r"; break;
