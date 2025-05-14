@@ -248,7 +248,7 @@ MalType* Evaluator::quasiquote(MalType* input) {
     if (dynamic_cast<MalList*>(sequence)){
         auto elems = sequence->get_elem();
         std::vector<MalType*> reversed = {elems.rbegin(), elems.rend()};
-        MalList* res = new MalList{};
+        auto res = new MalList{};
         for (const auto item: reversed){
             auto splice = dynamic_cast<MalUnQuoteSplicing*>(item);
             if (splice){
