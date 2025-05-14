@@ -30,7 +30,7 @@ class MalRef final : public MalType {
     MalType* val_;
 public:
     explicit MalRef(MalType* val);
-    MalType* get() const;
+    [[nodiscard]] MalType* get() const;
     void set(MalType* val);
     bool equal(const MalType* other) const override;
     [[nodiscard]] MalType* clone() const override;
@@ -192,6 +192,7 @@ protected:
     MalType* expr_;
 public:
     explicit MalSyntaxQuote(MalType* expr);
+    [[nodiscard]] MalType* get() const;
     [[nodiscard]] MalSyntaxQuote* clone() const override = 0;
     ~MalSyntaxQuote() override;
 };

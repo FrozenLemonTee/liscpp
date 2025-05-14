@@ -419,6 +419,10 @@ MalSyntaxQuote::~MalSyntaxQuote() {
     delete this->expr_;
 }
 
+MalType* MalSyntaxQuote::get() const {
+    return this->expr_;
+}
+
 MalQuote::MalQuote(MalType *expr) : MalSyntaxQuote(expr) {}
 
 std::string MalQuote::to_string(const bool print_readably) const {
