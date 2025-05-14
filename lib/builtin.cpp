@@ -270,27 +270,22 @@ MalType* evals(const std::vector<MalType *>& args) {
     return Evaluator::eval(args[0]);
 }
 
-MalType* load_file(const std::vector<MalType*>& args) {
-    if (args.size() != 1) {
-        throw argInvalidError("expected 1 arg, given " +
-                              std::to_string(args.size()) + " arg(s)");
-    }
-    auto str = dynamic_cast<MalString*>(args[0]);
-    if (!str) {
-        throw argInvalidError("wrong type");
-    }
+MalType* load_file_repl(const std::vector<MalType*>& args){
+    return load_file(args, true);
+}
 
-    std::ifstream ifs(str->get_elem());
-    if (!ifs) {
-        throw IOError("Cannot open file: " + str->get_elem());
-    }
+MalType* load_file(const std::vector<MalType*>& args, bool repl_mode) {
+    auto file = slurp(args);
+    auto str = dynamic_cast<MalString*>(file);
+    if (!str) throw argInvalidError("slurp did not return string");
 
-    std::stringstream ss;
-    ss << ifs.rdbuf();
+    const std::string no_comment = Reader::remove_comments(str->get_elem());
 
-    std::string wrapped_code = "(do " + ss.str() + "\nnil)";
-    auto expr = new MalString(wrapped_code);
-    return Evaluator::eval(Reader::read_str(expr->get_elem()));
+    const std::string wrapped = repl_mode ? "(do " + no_comment + "\n nil)" : no_comment;
+
+    std::vector<MalType*> wrapped_args{ new MalString(wrapped) };
+    auto ast = read_string(wrapped_args);
+    return evals({ast});
 }
 
 MalType* atom(const std::vector<MalType*>& args) {
