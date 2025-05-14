@@ -241,7 +241,7 @@ MalType* read_string(const std::vector<MalType*>& args) {
     if (!str){
         throw argInvalidError("wrong type");
     }
-    return Reader::read_str(str->to_string(false));
+    return Reader::read_str(Reader::remove_comments(str->to_string(false)));
 }
 
 MalType* slurp(const std::vector<MalType*>& args) {

@@ -18,6 +18,7 @@ public:
     static MalSyntaxQuote* read_syntax_quote(Reader &reader, const std::string &type);
     static MalAtom* read_atom(const Reader &reader);
     static std::string unescape_string(const std::string& str);
+    static std::string remove_comments(const std::string& input);
     Reader(std::vector<std::string> tokens, size_t pos);
     [[nodiscard]] std::string peek() const;
     std::string next();

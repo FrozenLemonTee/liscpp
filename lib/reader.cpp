@@ -178,6 +178,20 @@ std::string Reader::unescape_string(const std::string& str)
     return result;
 }
 
+std::string Reader::remove_comments(const std::string &input) {
+    std::istringstream iss(input);
+    std::string line;
+    std::string cleaned_input;
+    while (std::getline(iss, line)) {
+        auto comment_pos = line.find(';');
+        if (comment_pos != std::string::npos) {
+            line = line.substr(0, comment_pos);
+        }
+        cleaned_input += line + '\n';
+    }
+    return cleaned_input;
+}
+
 Reader::Reader(std::vector<std::string> tokens, const size_t pos)
     : tokens_(std::move(tokens)), pos_(pos) {}
 
