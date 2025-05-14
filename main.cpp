@@ -7,6 +7,8 @@
 #include "types.h"
 #include "printer.h"
 #include "env.h"
+#include "builtin.h"
+#include <cstdlib>
 
 
 MalType* READ(std::string input){
@@ -21,9 +23,17 @@ std::string PRINT(const MalType* input) {
     return Printer::pr_str(input, true);
 }
 
-int main(){
-    Env global_env;
-    Evaluator::set_env(&global_env);
+void file_exec(char** argv){
+    auto path = std::string(argv[1]);
+    try {
+        load_file({new MalString(path)}, false);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        std::exit(1);
+    }
+}
+
+void repl(Env& global_env){
     while(true){
         std::cout << "user> ";
         std::string input;
@@ -37,6 +47,22 @@ int main(){
         }catch(const typeError& e){
             std::cout << e.what() << std::endl;
         }
+    }
+}
+
+int main(int argc, char** argv){
+    Env global_env;
+    std::vector<MalType*> argv_list;
+    for (int i = 2; i < argc; ++i) {
+        argv_list.push_back(new MalString(argv[i]));
+    }
+    global_env.set("*ARGV*", new MalList(argv_list));
+    Evaluator::set_env(&global_env);
+
+    if (argc >= 2){
+        file_exec(argv);
+    } else{
+        repl(global_env);
     }
 
     return 0;

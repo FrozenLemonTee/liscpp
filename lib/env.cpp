@@ -4,6 +4,7 @@
 
 
 void Env::builtin_register() {
+    this->add("*ARGV*", new MalList({}));
     this->add("+", new MalFunction(operator_plus));
     this->add("-", new MalFunction(operator_minus));
     this->add("*", new MalFunction(operator_multiply));
