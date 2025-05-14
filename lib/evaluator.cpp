@@ -127,6 +127,34 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
                 continue;
             }
 
+            if (first_sym && first_sym->name() == "quote"){
+                if (lst_elem.size() != 2) {
+                    throw syntaxError("expected 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+                }
+                return new MalQuote(lst_elem[1]);
+            }
+
+            if (first_sym && first_sym->name() == "quasiquote"){
+                if (lst_elem.size() != 2) {
+                    throw syntaxError("expected 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+                }
+                return new MalQuasiQuote(lst_elem[1]);
+            }
+
+            if (first_sym && first_sym->name() == "unquote"){
+                if (lst_elem.size() != 2) {
+                    throw syntaxError("expected 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+                }
+                return new MalUnQuote(lst_elem[1]);
+            }
+
+            if (first_sym && first_sym->name() == "splice-unquote"){
+                if (lst_elem.size() < 2) {
+                    throw syntaxError("expected at least 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
+                }
+                return new MalUnQuoteSplicing(lst_elem[1]);
+            }
+
             std::vector<MalType*> eval_params;
             for (auto& arg: lst_elem){
                 eval_params.emplace_back(eval(arg, env));
@@ -184,6 +212,10 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
                     throw valueError("Cannot deref a non-atom type");
                 }
                 input = dynamic_cast<MalRef*>(res)->get();
+            } else if (dynamic_cast<MalQuote*>(syntax)){
+                return dynamic_cast<MalQuote*>(syntax)->get();
+            } else if (dynamic_cast<MalQuasiQuote*>(syntax)){
+                return quasiquote(dynamic_cast<MalQuasiQuote*>(syntax)->get());
             }
             continue;
         }
