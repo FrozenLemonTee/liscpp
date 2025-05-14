@@ -203,3 +203,47 @@ MalType* Evaluator::eval(MalType* input) {
 void Evaluator::set_env(Env *env) {
     repl_env = env;
 }
+
+MalType* Evaluator::quasiquote(MalType* input) {
+    if (dynamic_cast<MalUnQuote*>(input)){
+        return dynamic_cast<MalUnQuote*>(input)->get();
+    }
+
+    auto sequence = dynamic_cast<MalSequence*>(input);
+    if (!sequence || sequence->get_elem().empty()){
+        return input;
+    }
+    if (dynamic_cast<MalList*>(sequence)){
+        auto elems = sequence->get_elem();
+        std::vector<MalType*> reversed = {elems.rbegin(), elems.rend()};
+        MalList* res = new MalList{};
+        for (const auto item: reversed){
+            auto splice = dynamic_cast<MalUnQuoteSplicing*>(item);
+            if (splice){
+                res = new MalList{
+                        new MalSymbol("concat"),
+                        splice->get(),
+                        res
+                };
+            } else{
+                res = new MalList{
+                        new MalSymbol("cons"),
+                        quasiquote(item),
+                        res
+                };
+            }
+        }
+        return res;
+    }
+
+    if (auto vec = dynamic_cast<MalVector*>(input)) {
+        auto processed = quasiquote(new MalList({vec->get_elem()}));
+        return new MalList{ new MalSymbol("vec"), processed };
+    }
+
+    if (dynamic_cast<MalSymbol*>(input) || dynamic_cast<MalMap*>(input)) {
+        return new MalList{ new MalSymbol("quote"), input };
+    }
+
+    return input;
+}
