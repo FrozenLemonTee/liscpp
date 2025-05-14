@@ -42,10 +42,8 @@ void repl(Env& global_env){
             break;
         }try {
             std::cout << PRINT(EVAL(READ(input), global_env)) << std::endl;
-        }catch(const syntaxError& e) {
-            std::cout << e.what() << std::endl;
-        }catch(const typeError& e){
-            std::cout << e.what() << std::endl;
+        }catch(const liscppError& e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 }
