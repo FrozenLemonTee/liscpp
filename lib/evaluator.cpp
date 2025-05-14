@@ -175,6 +175,19 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
             return new MalMap(eval_args);
         }
 
+        auto syntax = dynamic_cast<MalSyntaxQuote*>(input);
+        if (syntax){
+            if (dynamic_cast<MalDeref*>(syntax)){
+                auto expr = dynamic_cast<MalDeref*>(syntax)->get();
+                auto res = eval(expr, env);
+                if (!dynamic_cast<MalRef*>(res)){
+                    throw valueError("Cannot deref a non-atom type");
+                }
+                input = dynamic_cast<MalRef*>(res)->get();
+            }
+            continue;
+        }
+
         return input;
     }
 }
