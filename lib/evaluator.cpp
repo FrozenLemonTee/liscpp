@@ -123,6 +123,7 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
                 }
 
                 input = lst_elem[2];
+                env = let_env;
                 continue;
             }
 
