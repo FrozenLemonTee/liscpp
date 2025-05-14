@@ -351,3 +351,43 @@ MalType* swap(const std::vector<MalType*>& args) {
     ref->set(result);
     return result;
 }
+
+MalType* cons(const std::vector<MalType*>& args) {
+    if (args.size() != 2) {
+        throw argInvalidError("expected 2 args, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    const auto sequence = dynamic_cast<MalSequence*>(args[1]);
+    if (!sequence){
+        throw argInvalidError("wrong type");
+    }
+    std::vector<MalType*> elems = sequence->get_elem();
+    elems.emplace(elems.begin(), args[0]);
+    return new MalList(elems);
+}
+
+MalType* concat(const std::vector<MalType*>& args) {
+    std::vector<MalType*> elems;
+    for (const auto& arg : args) {
+        auto seq = dynamic_cast<MalSequence*>(arg);
+        if (!seq) {
+            throw argInvalidError("concat expects sequence types");
+        }
+        const auto& part = seq->get_elem();
+        elems.insert(elems.end(), part.begin(), part.end());
+    }
+    return new MalList(elems);
+}
+
+MalType* vec(const std::vector<MalType*>& args) {
+    if (args.size() != 1) {
+        throw argInvalidError("expected 1 arg, given " +
+                              std::to_string(args.size()) + " arg(s)");
+    }
+    auto sequence = dynamic_cast<MalSequence*>(args[0]);
+    if (!sequence){
+        throw argInvalidError("wrong type");
+    }
+    return dynamic_cast<MalVector*>(sequence) ? args[0]
+        : new MalVector({sequence->get_elem().begin(), sequence->get_elem().end()});
+}

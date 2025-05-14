@@ -36,6 +36,9 @@ MalType* is_atom(const std::vector<MalType*>& args);
 MalType* deref(const std::vector<MalType*>& args);
 MalType* reset(const std::vector<MalType*>& args);
 MalType* swap(const std::vector<MalType*>& args);
+MalType* cons(const std::vector<MalType*>& args);
+MalType* concat(const std::vector<MalType*>& args);
+MalType* vec(const std::vector<MalType*>& args);
 
 
 #endif //BUILTIN_H

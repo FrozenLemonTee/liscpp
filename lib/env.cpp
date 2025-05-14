@@ -32,6 +32,9 @@ void Env::builtin_register() {
     this->add("deref", new MalFunction(deref));
     this->add("reset!", new MalFunction(reset));
     this->add("swap!", new MalFunction(swap));
+    this->add("cons", new MalFunction(cons));
+    this->add("concat", new MalFunction(concat));
+    this->add("vec", new MalFunction(vec));
 }
 
 Env::Env(Env *host, const bool is_global)
