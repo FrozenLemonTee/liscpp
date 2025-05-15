@@ -131,14 +131,14 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
                 if (lst_elem.size() != 2) {
                     throw syntaxError("expected 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
                 }
-                return new MalQuote(lst_elem[1]);
+                return lst_elem[1];
             }
 
             if (first_sym && first_sym->name() == "quasiquote"){
                 if (lst_elem.size() != 2) {
                     throw syntaxError("expected 1 arg, but given " + std::to_string(lst_elem.size() - 1) + "arg(s)");
                 }
-                return new MalQuasiQuote(lst_elem[1]);
+                return quasiquote(lst_elem[1]);
             }
 
             if (first_sym && first_sym->name() == "unquote"){
@@ -215,7 +215,7 @@ MalType* Evaluator::eval(MalType *input, Env* env) {
             } else if (dynamic_cast<MalQuote*>(syntax)){
                 return dynamic_cast<MalQuote*>(syntax)->get();
             } else if (dynamic_cast<MalQuasiQuote*>(syntax)){
-                return quasiquote(dynamic_cast<MalQuasiQuote*>(syntax)->get());
+                input = quasiquote(dynamic_cast<MalQuasiQuote*>(syntax)->get());
             }
             continue;
         }
