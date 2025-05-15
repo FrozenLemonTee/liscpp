@@ -13,7 +13,7 @@ liscpp
 ```
 * 进入REPL交互界面
 ```text
-user>>
+user>
 ```
 
 文件执行模式:
